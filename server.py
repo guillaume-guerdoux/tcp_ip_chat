@@ -1,18 +1,26 @@
-#!/usr/bin/env python
+''' Création d'un serveur Il n'accepte 
+qu'un seul client (nous verrons plus bas comment en accepter plusieurs) 
+et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
 
-TCP_IP = '127.0.0.1'
-TCP_PORT = 5005
-BUFFER_SIZE = 20  # Normally 1024, but we want fast response
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((TCP_IP, TCP_PORT))
-s.listen(1)
+hote = ''
+port = 12800
 
-conn, addr = s.accept()
-print 'Connection address:', addr
-while 1:
-  data = conn.recv(BUFFER_SIZE)
-  if not data: break
-  print "received data:", data
-  conn.send(data)  # echo
-  conn.close()
+connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+connexion_principale.bind((hote, port))
+connexion_principale.listen(5)
+print("Le serveur écoute à présent sur le port {}".format(port))
+
+connexion_avec_client, infos_connexion = connexion_principale.accept()
+
+msg_recu = b""
+while msg_recu != b"fin":
+    msg_recu = connexion_avec_client.recv(1024)
+    # L'instruction ci-dessous peut lever une exception si le message
+    # Réceptionné comporte des accents
+    print(msg_recu.decode())
+    connexion_avec_client.send(b"5 / 5")
+
+print("Fermeture de la connexion")
+connexion_avec_client.close()
+connexion_principale.close()
