@@ -1,0 +1,6 @@
+Tuto for creating a python p2p chat : http://null-byte.wonderhowto.com/how-to/sploit-build-peer-peer-chat-application-python-gui-linux-0163617/
+
+Package pyp2p : https://pypi.python.org/pypi/pyp2p
+
+Python code p2p : http://code.activestate.com/recipes/578591-primitive-peer-to-peer-chat/
+
