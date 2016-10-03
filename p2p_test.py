@@ -13,7 +13,7 @@ def main():
                 self.addr = None
             def run(self):
                 HOST = ''
-                PORT = 1776
+                PORT = 33176
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind((HOST,PORT))
@@ -21,6 +21,7 @@ def main():
                 self.conn, self.addr = s.accept()
                 # Select loop for listen
                 while self.running == True:
+                    print("self.running == true")
                     inputready,outputready,exceptready \
                       = select.select ([self.conn],[self.conn],[])
                     for input_item in inputready:
@@ -41,11 +42,12 @@ def main():
                 self.sock = None
                 self.running = 1
             def run(self):
-                PORT = 1776
+                PORT = 33176
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.sock.connect((self.host, PORT))
                 # Select loop for listen
                 while self.running == True:
+                    print("self.running == true")
                     inputready,outputready,exceptready \
                       = select.select ([self.sock],[self.sock],[])
                     for input_item in inputready:
@@ -65,7 +67,7 @@ def main():
                 self.running = 1
             def run(self):
                 while self.running == True:
-                  text = input('')
+                  text = input('> Write your message')
                   try:
                       chat_client.sock.sendall(text)
                   except:
