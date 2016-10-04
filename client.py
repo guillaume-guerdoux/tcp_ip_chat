@@ -2,8 +2,8 @@
  Il demande à l'utilisateur de saisir quelque chose au clavier et envoie ce quelque chose au serveur, puis attend sa réponse.'''
 import socket
 
-hote = "localhost"
-port = 12800
+hote = "138.195.109.38"
+port = 44444
 
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_avec_serveur.connect((hote, port))
