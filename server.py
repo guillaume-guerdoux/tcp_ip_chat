@@ -1,4 +1,4 @@
-''' Création d'un serveur Il n'accepte 
+''' Version mod. Création d'un serveur Il n'accepte
 qu'un seul client (nous verrons plus bas comment en accepter plusieurs) 
 et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
