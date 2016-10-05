@@ -2,7 +2,7 @@
  Il demande à l'utilisateur de saisir quelque chose au clavier et envoie ce quelque chose au serveur, puis attend sa réponse.'''
 import socket
 
-hote = "138.195.109.38"
+hote = "138.195.108.19"
 port = 44444
 
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
