@@ -3,8 +3,8 @@ qu'un seul client (nous verrons plus bas comment en accepter plusieurs)
 et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
 
-hote = '138.195.109.38'
-port = 44444
+hote = '127.0.0.1'
+port = 44445
 
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_principale.bind((hote, port))
