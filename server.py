@@ -7,8 +7,6 @@ import threading
 hote = '127.0.0.1'
 port = 44446
 
-msg_recu = b"fin"
-
 class Chat_Send_Message(threading.Thread):
 	
 	def __init__(self, connexion_avec_client):
@@ -47,7 +45,8 @@ print("Le serveur écoute à présent sur le port {}".format(port))
 connexion_avec_client, infos_connexion = connexion_principale.accept()
 
 msg_recu = b""
-while msg_recu != b"fin":
+msg_a_envoyer = b""
+while msg_recu != b"fin" and msg_a_envoyer != b"fin":
 	'''msg_recu = connexion_avec_client.recv(1024)
 	print(msg_recu.decode())
 	msg_a_envoyer = input("> ")
@@ -66,6 +65,7 @@ while msg_recu != b"fin":
 	# Attend que les threads se terminent
 	thread_1.join()
 	thread_2.join()
+
 
 print("Fermeture de la connexion")
 connexion_avec_client.close()
