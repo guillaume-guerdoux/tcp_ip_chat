@@ -12,7 +12,7 @@ class Chat_Server(threading.Thread):
 		self.sock = None
 		self.connexion_principale = None
 		self.infos_connexion = None
-
+		self.type_of_thread = "SERVER"
 	def run(self):
 		HOST = '127.0.0.1'
 		PORT = 44465
@@ -51,6 +51,7 @@ class Chat_Client(threading.Thread):
 		self.host = host
 		self.sock = None
 		self.running = 1
+		self.type_of_thread = "CLIENT"
 	def run(self):
 		PORT = 44465
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -88,12 +89,20 @@ class Text_Input(threading.Thread):
 		while self.running == True:
 			text = raw_input('>')
 			try:
-				self.send_chat.sock.sendall(text)
-				if text == "fin":
-					print("end of connection")
+				
+				if text == "fin" and self.send_chat.type_of_thread=="SERVER":
+					self.send_chat.sock.sendall(text)
+					print("end of connection_with client")
 					self.send_chat.kill()
 					print("wait for kill")
 					self.kill()
+				elif text=="fin" and self.send_chat.type_of_thread=="CLIENT":
+					print("end of connection with server")
+					self.send_chat.kill()
+					print("wait for kill")
+					self.kill()
+				else:
+					self.send_chat.sock.sendall(text)
 			except:
 				Exception
 			time.sleep(0)
