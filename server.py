@@ -2,16 +2,17 @@
 qu'un seul client (nous verrons plus bas comment en accepter plusieurs) 
 et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
-from threading import Thread, RLock
+import threading
 
 hote = '127.0.0.1'
-port = 44449
-verrou = RLock()
+port = 44446
 
-class Chat_Send_Message(Thread):
+msg_recu = b"fin"
+
+class Chat_Send_Message(threading.Thread):
 	
 	def __init__(self, connexion_avec_client):
-		Thread.__init__(self)
+		threading.Thread.__init__(self)
 		self.connexion_avec_client=connexion_avec_client
 
 	def run(self):
@@ -20,16 +21,25 @@ class Chat_Send_Message(Thread):
 		msg_a_envoyer = msg_a_envoyer.encode()
 		# On envoie le message
 		self.connexion_avec_client.send(msg_a_envoyer)
+		while msg_a_envoyer != b"fin":
+			msg_a_envoyer = input("> ")
+			# Peut planter si vous tapez des caractères spéciaux
+			msg_a_envoyer = msg_a_envoyer.encode()
+			# On envoie le message
+			self.connexion_avec_client.send(msg_a_envoyer)
 
-class Chat_Receive_Message(Thread):
+class Chat_Receive_Message(threading.Thread):
 	
 	def __init__(self, connexion_avec_client):
-		Thread.__init__(self)
+		threading.Thread.__init__(self)
 		self.connexion_avec_client=connexion_avec_client
 
 	def run(self):
 		msg_recu = self.connexion_avec_client.recv(1024)
-		print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
+		print(msg_recu.decode())
+		while msg_recu != b"fin":
+			msg_recu = self.connexion_avec_client.recv(1024)
+			print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
 
 
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
