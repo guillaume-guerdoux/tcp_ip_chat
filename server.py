@@ -2,9 +2,10 @@
 qu'un seul client (nous verrons plus bas comment en accepter plusieurs) 
 et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
+import threading
 
 hote = '127.0.0.1'
-port = 44445
+port = 44446
 
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_principale.bind((hote, port))
@@ -24,8 +25,6 @@ while msg_recu != b"fin":
     # L'instruction ci-dessous peut lever une exception si le message
     # Réceptionné comporte des accents
     
-    connexion_avec_client.send(b"5 / 5")
-
 print("Fermeture de la connexion")
 connexion_avec_client.close()
 connexion_principale.close()

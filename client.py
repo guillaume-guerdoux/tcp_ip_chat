@@ -3,7 +3,7 @@
 import socket
 
 hote = "127.0.0.1"
-port = 44445
+port = 44446
 
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_avec_serveur.connect((hote, port))
