@@ -1,12 +1,14 @@
 '''  Création d'un client  Il va tenter de se connecter sur le port 12800 de la machine locale.
  Il demande à l'utilisateur de saisir quelque chose au clavier et envoie ce quelque chose au serveur, puis attend sa réponse.'''
 import socket
-import threading
+from threading import Thread, RLock
 
-class Chat_Send_Message(threading.Thread):
+verrou = RLock()
+
+class Chat_Send_Message(Thread):
 	
 	def __init__(self, connexion_avec_serveur):
-		threading.Thread.__init__(self)
+		Thread.__init__(self)
 		self.connexion_avec_serveur = connexion_avec_serveur
 
 	def run(self):
@@ -16,10 +18,10 @@ class Chat_Send_Message(threading.Thread):
 		# On envoie le message
 		self.connexion_avec_serveur.send(msg_a_envoyer)
 
-class Chat_Receive_Message(threading.Thread):
+class Chat_Receive_Message(Thread):
 	
 	def __init__(self, connexion_avec_serveur):
-		threading.Thread.__init__(self)
+		Thread.__init__(self)
 		self.connexion_avec_serveur = connexion_avec_serveur
 
 	def run(self):
@@ -27,7 +29,7 @@ class Chat_Receive_Message(threading.Thread):
 		print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
 
 hote = "127.0.0.1"
-port = 44446
+port = 44449
 
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_avec_serveur.connect((hote, port))
@@ -47,8 +49,8 @@ while msg_a_envoyer != b"fin":
 	thread_1 = Chat_Send_Message(connexion_avec_serveur)
 	thread_2 = Chat_Receive_Message(connexion_avec_serveur)
 	# Lancement des threads
-	thread_1.start()
 	thread_2.start()
+	thread_1.start()
 	# Attend que les threads se terminent
 	thread_1.join()
 	thread_2.join()

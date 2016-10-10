@@ -2,15 +2,16 @@
 qu'un seul client (nous verrons plus bas comment en accepter plusieurs) 
 et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
-import threading
+from threading import Thread, RLock
 
 hote = '127.0.0.1'
-port = 44446
+port = 44449
+verrou = RLock()
 
-class Chat_Send_Message(threading.Thread):
+class Chat_Send_Message(Thread):
 	
 	def __init__(self, connexion_avec_client):
-		threading.Thread.__init__(self)
+		Thread.__init__(self)
 		self.connexion_avec_client=connexion_avec_client
 
 	def run(self):
@@ -20,10 +21,10 @@ class Chat_Send_Message(threading.Thread):
 		# On envoie le message
 		self.connexion_avec_client.send(msg_a_envoyer)
 
-class Chat_Receive_Message(threading.Thread):
+class Chat_Receive_Message(Thread):
 	
 	def __init__(self, connexion_avec_client):
-		threading.Thread.__init__(self)
+		Thread.__init__(self)
 		self.connexion_avec_client=connexion_avec_client
 
 	def run(self):
