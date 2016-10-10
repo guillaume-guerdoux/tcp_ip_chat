@@ -10,17 +10,16 @@ class Chat_Send_Message(threading.Thread):
 		self.connexion_avec_serveur = connexion_avec_serveur
 
 	def run(self):
-		msg_a_envoyer = input("> ")
-		# Peut planter si vous tapez des caractères spéciaux
-		msg_a_envoyer = msg_a_envoyer.encode()
-		# On envoie le message
-		self.connexion_avec_serveur.send(msg_a_envoyer)
+		msg_a_envoyer = ''
 		while msg_a_envoyer != b"fin":
 			msg_a_envoyer = input("> ")
 			# Peut planter si vous tapez des caractères spéciaux
 			msg_a_envoyer = msg_a_envoyer.encode()
 			# On envoie le message
 			self.connexion_avec_serveur.send(msg_a_envoyer)
+		if msg_a_envoyer == b"fin":
+			print("Fermeture de la connexion")
+			connexion_avec_serveur.close()
 
 class Chat_Receive_Message(threading.Thread):
 	
@@ -29,11 +28,13 @@ class Chat_Receive_Message(threading.Thread):
 		self.connexion_avec_serveur = connexion_avec_serveur
 
 	def run(self):
-		msg_recu = self.connexion_avec_serveur.recv(1024)
-		print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
+		msg_recu = ''
 		while msg_recu != b"fin":
 			msg_recu = self.connexion_avec_serveur.recv(1024)
 			print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
+		if msg_recu == b"fin":
+			print("Fermeture de la connexion")
+			connexion_avec_serveur.close()
 
 hote = "127.0.0.1"
 port = 44446
@@ -44,8 +45,8 @@ print("Connexion établie avec le serveur sur le port {}".format(port))
 
 msg_a_envoyer = b""
 while msg_a_envoyer != b"fin":
-	msg_a_envoyer = input("> ")
-	# Peut planter si vous tapez des caractères spéciaux'''
+	'''msg_a_envoyer = input("> ")
+	# Peut planter si vous tapez des caractères spéciaux
 	msg_a_envoyer = msg_a_envoyer.encode()
 	# On envoie le message
 	connexion_avec_serveur.send(msg_a_envoyer)
