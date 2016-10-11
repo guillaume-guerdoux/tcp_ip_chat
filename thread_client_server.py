@@ -42,25 +42,6 @@ class Chat_Server(threading.Thread):
 					if msg_received == "fin":
 						serveur_lance = False
 
-		'''self.sock, self.connection_infos = self.main_connection.accept()
-		print("Connection with client done")
-		# Select loop for listen
-		while self.running == True:
-			inputready,outputready,exceptready \
-			= select.select ([self.sock],[self.sock],[])
-			#print(inputready)
-			for input_item in inputready:
-				# Handle sockets
-				data = self.sock.recv(1024).decode()
-				if data:
-					if data == "fin":
-						print("end of connection with client")
-						self.kill()
-					else:
-						print(data)
-				else:
-					break
-				time.sleep(0)'''
 
 	def send(self, message):
 		for client in self.clients_connected:
@@ -95,7 +76,6 @@ class Chat_Client(threading.Thread):
 				# Handle sockets
 				data = self.sock.recv(1024).decode()
 				if data:
-					print(data)
 					if data == "fin":
 						print("end of connection with server")
 						self.kill()
