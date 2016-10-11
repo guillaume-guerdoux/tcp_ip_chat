@@ -15,12 +15,12 @@ class Chat_Server(threading.Thread):
 		self.type_of_thread = "SERVER"
 		self.clients_connected = []
 	def run(self):
-		HOST = '127.0.0.1'
+		HOST = '138.195.108.19'
 		PORT = 44441
 		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		#self.main_connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.main_connection.bind((HOST,PORT))
-		self.main_connection.listen(1)
+		self.main_connection.listen(5)
 		while self.running:
 			ask_connections, wlist, xlist = select.select([self.main_connection],
 				[], [], 0.05)
@@ -39,8 +39,6 @@ class Chat_Server(threading.Thread):
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
 					print(msg_received)
-					if msg_received == "fin":
-						serveur_lance = False
 
 
 	def send(self, message):
@@ -128,7 +126,7 @@ class Text_Input(threading.Thread):
 
 host = input('Quelle IP voulez-vous contacter ? ')
 
-if host == 'listen':
+if host.lower() == 'listen':
 	chat_server = Chat_Server()
 	chat_server.start()
 	text_input = Text_Input(chat_server)
