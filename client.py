@@ -3,34 +3,59 @@
 import socket
 import threading
 
+
+
 class Chat_Send_Message(threading.Thread):
 	
 	def __init__(self, connexion_avec_serveur):
 		threading.Thread.__init__(self)
 		self.connexion_avec_serveur = connexion_avec_serveur
+		self.type_of_thread = "CLIENT"
+		self.running = 1
+		
 
 	def run(self):
-		msg_a_envoyer = ''
-		while msg_a_envoyer != b"fin":
+		while self.running == True:
 			msg_a_envoyer = input("> ")
-			# Peut planter si vous tapez des caractères spéciaux
-			msg_a_envoyer = msg_a_envoyer.encode()
+			msg_envoye = msg_a_envoyer.encode()
 			# On envoie le message
-			self.connexion_avec_serveur.send(msg_a_envoyer)
+			self.connexion_avec_serveur.send(msg_envoye)
+			if msg_a_envoyer == "fin":
+				print("Fermeture de la connexion client envoi")
+				self.closure()
+				break
+		self.running = False
+		print ("le thread est stopé")
+	
+	def closure(self):
+		print ("Fermeture de la connexion")
+		connexion_avec_serveur.close()
+		print ("La connexion est fermee")
+		
 
 class Chat_Receive_Message(threading.Thread):
 	
 	def __init__(self, connexion_avec_serveur):
 		threading.Thread.__init__(self)
 		self.connexion_avec_serveur = connexion_avec_serveur
-
-	def run(self):
-		msg_recu = ''
-		while msg_recu != b"fin":
-			msg_recu = self.connexion_avec_serveur.recv(1024)
-			print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
-
+		self.running = 1
 		
+	def run(self):
+		while self.running == True:
+			msg_recu = self.connexion_avec_serveur.recv(1024)
+			print(msg_recu.decode()) # Là encore, peut planter s'il y a des accent
+			if msg_recu.decode() == "fin":
+				print("Fermeture de la connexion client recu")
+				self.closure()
+				break
+		self.running = False
+		print ("le thread est stopé")
+
+	def closure(self):
+		print ("Fermeture de la connexion")
+		connexion_avec_serveur.close()
+		print ("La connexion est fermee")
+
 hote = "127.0.0.1"
 port = 44446
 
@@ -38,29 +63,14 @@ connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_avec_serveur.connect((hote, port))
 print("Connexion établie avec le serveur sur le port {}".format(port))
 
-msg_recu = b""
-msg_a_envoyer = b""
-while msg_recu != b"fin" and msg_a_envoyer != b"fin":
-	'''msg_a_envoyer = input("> ")
-	# Peut planter si vous tapez des caractères spéciaux
-	msg_a_envoyer = msg_a_envoyer.encode()
-	# On envoie le message
-	connexion_avec_serveur.send(msg_a_envoyer)
-	msg_recu = connexion_avec_serveur.recv(1024)
-	print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents'''
-
-	# Création des threads
-	thread_1 = Chat_Send_Message(connexion_avec_serveur)
-	thread_2 = Chat_Receive_Message(connexion_avec_serveur)
-	# Lancement des threads
-	thread_2.start()
-	thread_1.start()
-	# Attend que les threads se terminent
-	thread_2.join()
-	thread_1.join()
-
-
-print("Fermeture de la connexion")
-connexion_avec_serveur.close()
+# Création des threads
+thread_1 = Chat_Send_Message(connexion_avec_serveur)
+thread_2 = Chat_Receive_Message(connexion_avec_serveur)
+# Lancement des threads
+thread_2.start()
+thread_1.start()
+# Attend que les threads se terminent
+thread_2.join()
+thread_1.join()
 
 
