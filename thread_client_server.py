@@ -6,8 +6,9 @@ import time
 
 
 class Chat_Server(threading.Thread):
-	def __init__(self):
+	def __init__(self, host):
 		threading.Thread.__init__(self)
+		self.host = host
 		self.running = True
 		self.sock = None
 		self.main_connection = None
@@ -15,11 +16,10 @@ class Chat_Server(threading.Thread):
 		self.type_of_thread = "SERVER"
 		self.clients_connected = []
 	def run(self):
-		HOST = '138.195.108.19'
 		PORT = 44441
 		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		#self.main_connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.main_connection.bind((HOST,PORT))
+		self.main_connection.bind((self.host,PORT))
 		self.main_connection.listen(5)
 		while self.running:
 			ask_connections, wlist, xlist = select.select([self.main_connection],
@@ -123,7 +123,8 @@ class Text_Input(threading.Thread):
 host = input('Quelle IP voulez-vous contacter ? ')
 
 if host.lower() == 'listen':
-	chat_server = Chat_Server()
+	my_ip = input("Quel est ton ip?")
+	chat_server = Chat_Server(my_ip)
 	chat_server.start()
 	text_input = Text_Input(chat_server)
 	text_input.start()
