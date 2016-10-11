@@ -26,8 +26,8 @@ class Chat_Server(threading.Thread):
 				[], [], 0.05)
 			for connection in ask_connections:
 				connection_with_client, connection_infos = self.main_connection.accept()
+				print("Connection with client done")
 				self.clients_connected.append(connection_with_client)
-				self.send("coucou")
 			clients_to_read = []
 			try:
 				clients_to_read, wlist, xlist = select.select(self.clients_connected,
@@ -39,7 +39,6 @@ class Chat_Server(threading.Thread):
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
 					print(msg_received)
-
 
 	def send(self, message):
 		for client in self.clients_connected:
@@ -64,7 +63,6 @@ class Chat_Client(threading.Thread):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.connect((self.host, PORT))
 		print("Connection with server done")
-		self.send("coucou")
 		# Select loop for listen
 		while self.running == True:
 			inputready,outputready,exceptready \
@@ -102,15 +100,13 @@ class Text_Input(threading.Thread):
 			text = input('')
 			try:
 				if text == "fin" and self.send_chat.type_of_thread=="SERVER":
-					self.send_chat.sock.sendall(text)
+					self.send_chat.send(text)
 					print("end of connection_with client")
 					self.send_chat.kill()
-					print("wait for kill")
 					self.kill()
 				elif text=="fin" and self.send_chat.type_of_thread=="CLIENT":
 					print("end of connection with server")
 					self.send_chat.kill()
-					print("wait for kill")
 					self.kill()
 				else:
 					#text = text.encode()
