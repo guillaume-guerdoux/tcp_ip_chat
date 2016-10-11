@@ -10,7 +10,6 @@ class Chat_Server(threading.Thread):
 		threading.Thread.__init__(self)
 		self.host = host
 		self.running = True
-		self.sock = None
 		self.main_connection = None
 		#self.connection_infos = None
 		self.type_of_thread = "SERVER"
@@ -22,8 +21,7 @@ class Chat_Server(threading.Thread):
 		self.main_connection.bind((self.host,PORT))
 		self.main_connection.listen(5)
 		while self.running:
-			ask_connections, wlist, xlist = select.select([self.main_connection],
-				[], [], 0.05)
+			ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
 			for connection in ask_connections:
 				connection_with_client, connection_infos = self.main_connection.accept()
 				print("Connection with client done")
@@ -39,6 +37,9 @@ class Chat_Server(threading.Thread):
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
 					print(msg_received)
+					if msg_received == "fin":
+						print("end of connection with client")
+						self.kill()
 
 	def send(self, message):
 		for client in self.clients_connected:
@@ -46,8 +47,6 @@ class Chat_Server(threading.Thread):
 
 	def kill(self):
 		self.running = False
-		self.sock.close()
-		print("socket of server closed")
 		self.main_connection.close()
 		print("main socket closed")
 
@@ -101,10 +100,11 @@ class Text_Input(threading.Thread):
 			try:
 				if text == "fin" and self.send_chat.type_of_thread=="SERVER":
 					self.send_chat.send(text)
-					print("end of connection_with client")
+					print("end of connection with client")
 					self.send_chat.kill()
 					self.kill()
 				elif text=="fin" and self.send_chat.type_of_thread=="CLIENT":
+					self.send_chat.send(text)
 					print("end of connection with server")
 					self.send_chat.kill()
 					self.kill()
