@@ -3,6 +3,7 @@ import threading
 import select
 import time
 
+# Thread to receive client messages
 class Receive_client_messages(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -19,18 +20,13 @@ class Receive_client_messages(threading.Thread):
 				pass
 			else:
 				for client in clients_to_read:
-					'''clients_to_send = self.clients_connected
-					clients_to_send.remove(client)'''
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
 					print(msg_received)
 					if msg_received == "fin":
 						print("end of connection with client")
 						self.kill()
-
-	'''def receive_message(self):
-		return self.connection_with_client.recv(1024).decode()'''
-
+# Thread to send messages to client
 class Send_messages_to_clients(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -52,6 +48,7 @@ class Send_messages_to_clients(threading.Thread):
 		for client in list_client:
 			client.send(message.encode())
 
+#Server thread 
 class Server(threading.Thread):
 	def __init__(self, host):
 		threading.Thread.__init__(self)
@@ -59,15 +56,17 @@ class Server(threading.Thread):
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
-		'''self.receive_client_message_thread_list = []
-		self.send_messages_to_clients_thread_list = []'''
 		self.port = 44443
+		# Create thread to send and receiver messages
 		self.receive_client_messages = Receive_client_messages()
 		self.send_messages_to_clients = Send_messages_to_clients()
+
 	def run(self):
+		# Create main connection
 		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.main_connection.bind((self.host,self.port))
 		self.main_connection.listen(5)
+		# Start both thread of receiving and sending message
 		self.receive_client_messages.start()
 		self.send_messages_to_clients.start()
 		while self.running:
@@ -75,17 +74,12 @@ class Server(threading.Thread):
 			for connection in ask_connections:
 				connection_with_client, connection_infos = self.main_connection.accept()
 				print("Connection with client done")
+				# Add client connection to list and to threads list of client connected
 				self.clients_connected.append(connection_with_client)
 				self.receive_client_messages.clients_connected.append(connection_with_client)
 				self.send_messages_to_clients.clients_connected.append(connection_with_client)
 				
-			
-
-	
-
-
-
-
+# Client thread
 class Client(threading.Thread):
 	def __init__(self, host):
 		threading.Thread.__init__(self)
@@ -126,6 +120,7 @@ if host.lower() == 'listen':
 	my_ip = input("Quel est ton ip?")
 	server = Server(my_ip)
 	server.start()
+	
 else:
 	client = Client(host)
 	client.start()
