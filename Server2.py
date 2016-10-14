@@ -2,7 +2,7 @@ import socket
 import threading
 import os
 
-hote = '127.0.0.1'
+hote = '138.195.110.204'
 port = 44460
 
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
