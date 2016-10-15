@@ -1,62 +1,127 @@
-''' Version mod. Création d'un serveur Il n'accepte
-qu'un seul client (nous verrons plus bas comment en accepter plusieurs) 
-et il tourne jusqu'à recevoir du client le message fin.'''
 import socket
 import threading
+import select
 
-hote = '127.0.0.1'
-port = 44446
+''' Server Thread 
 
-class Serveur(threading.Thread):
-	
-	def __init__(self, connexion_avec_client):
+Thread which is enabled when server is created. Listen to new client connection '''
+
+class Server(threading.Thread):
+	def __init__(self, host, receive_client_messages, send_messages_to_clients):
 		threading.Thread.__init__(self)
-		self.connexion_avec_client = connexion_avec_client
-		self.type_of_thread = "SERVER"
-		self.running = 1	
-		
+		self.host = host
+		self.running = True
+		self.main_connection = None
+		self.clients_connected = []
+		self.port = 44447
+		# Get thread to send and receiver messages
+		self.receive_client_messages = receive_client_messages
+		self.send_messages_to_clients = send_messages_to_clients
+
 	def run(self):
-		msg_a_envoyer = ''
+		# Create main connection
+		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.main_connection.bind((self.host,self.port))
+		self.main_connection.listen(5)
+
+		while self.running == True:
+			# Get all new connections asked by client
+			ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
+			for connection in ask_connections:
+				# Accept client connection
+				connection_with_client, connection_infos = self.main_connection.accept()
+				print("Connection with client done")
+				# Add client connection to list and to threads list of client connected
+				self.clients_connected.append(connection_with_client)
+				self.receive_client_messages.clients_connected.append(connection_with_client)
+				self.send_messages_to_clients.clients_connected.append(connection_with_client)
+
+	def kill(self):
+		self.running = False
+		print("Server closed")
+		self.receive_client_messages.running = False
+		print("receive client message thread closed")
+		for client in self.clients_connected:
+			client.close()
+		print("connection with all clients closed")
+		self.main_connection.close()
+		print("main connection closed")
+		
+
+''' Receive message Thread 
+
+Thread which is enabled server to receive client messages '''
+class ReceiveMessages(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.clients_connected = []
+		self.server = None
+		self.running = True
+
+	def run(self):
+		while self.running == True:
+			clients_to_read = []
+			try:
+				# Clients to read is a list of client who has sent a message
+				clients_to_read, wlist, xlist = select.select(self.clients_connected,
+					self.clients_connected, [],0.05)
+			except select.error:
+				pass
+			else:
+				# Print all messages received
+				for client in clients_to_read:
+					msg_received = client.recv(1024)
+					msg_received = msg_received.decode()
+					print(msg_received)
+					if msg_received == "fin":
+						self.kill(client)
+
+	def kill(self, client):
+		client.close()
+		print("connection with client closed")
+		
+''' Send message Thread 
+
+Thread which is enabled server to send messages to clients '''
+class SendMessages(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.clients_connected = []
+		self.server = None
+		self.running = True
+
+	def run(self):
 		while self.running == True:
 			msg_a_envoyer = input("> ")
-			msg_recu = self.connexion_avec_client.recv(1024)
 			if msg_a_envoyer:
-				msg_envoye = msg_a_envoyer.encode()
-				# On envoie le message
-				self.connexion_avec_client.send(msg_envoye)
-				if msg_a_envoyer == "fin":
-					self.closure()
-					break
-			elif msg_recu :
-			print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
-			if msg_recu.decode() == "fin":
-				self.closure()
-				break
+				self.send_message_to_list_of_client(msg_a_envoyer, self.clients_connected)
+			if msg_a_envoyer == "fin":
+				self.send_message_to_list_of_client(msg_a_envoyer, self.clients_connected)
+				self.kill()
+				
+				
+	# Send a message to a list of client
+	def send_message_to_list_of_client(self, message, list_client):
+		for client in list_client:
+			client.send(message.encode())
+
+	def kill(self):
 		self.running = False
-		print("le thread est stopé")
-	
-	def closure(self):
-		print ("Fermeture de la connexion")
-		connexion_avec_client.close()
-		connexion_principale.close()
-		print ("La connexion est fermee")
+		print("send message thread closed")
+		self.server.kill()
 		
 		
 
-connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-connexion_principale.bind((hote, port))
-connexion_principale.listen(5)
-print("Le serveur écoute à présent sur le port {}".format(port))
 
-connexion_avec_client, infos_connexion = connexion_principale.accept()
 
-# Création des
-thread_2 = Serveur(connexion_avec_client)
-# Lancement des threads
-thread_1.start()
-thread_2.start()
-# Attend que les threads se terminent
-thread_1.join()
-thread_2.join()
+my_ip = input("Quel est ton ip?")
+receive_client_messages = ReceiveMessages()
+send_messages_to_clients = SendMessages()
+send_messages_to_clients.start()
+receive_client_messages.start()
+server = Server(my_ip, receive_client_messages, send_messages_to_clients)
+server.start()
+receive_client_messages.server = server
+send_messages_to_clients.server = server
 
 
