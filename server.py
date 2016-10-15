@@ -13,7 +13,7 @@ class Server(threading.Thread):
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
-		self.port = 44447
+		self.port = 44451
 		# Get thread to send and receiver messages
 		self.receive_client_messages = receive_client_messages
 		self.send_messages_to_clients = send_messages_to_clients
@@ -65,7 +65,7 @@ class ReceiveMessages(threading.Thread):
 				# Clients to read is a list of client who has sent a message
 				clients_to_read, wlist, xlist = select.select(self.clients_connected,
 					self.clients_connected, [],0.05)
-			except select.error:
+			except Exception:
 				pass
 			else:
 				# Print all messages received
@@ -96,7 +96,6 @@ class SendMessages(threading.Thread):
 			if msg_a_envoyer:
 				self.send_message_to_list_of_client(msg_a_envoyer, self.clients_connected)
 			if msg_a_envoyer == "fin":
-				self.send_message_to_list_of_client(msg_a_envoyer, self.clients_connected)
 				self.kill()
 				
 				

@@ -9,7 +9,7 @@ class Client():
 	def __init__(self, host):
 		self.host = host
 		self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.port = 44447
+		self.port = 44451
 		self.connection_with_server.connect((self.host, self.port))
 		self.send_message_to_server = None
 		self.receive_server_messages = None
@@ -74,7 +74,9 @@ class ReceiveServerMessages(threading.Thread):
 host = input('Quelle IP voulez-vous contacter ? ')
 client = Client(host)
 send_message_to_server = SendMessageToServer(client)
+send_message_to_server.daemon = True 
 receive_server_messages = ReceiveServerMessages(client)
+#receive_server_messages.daemon = True
 send_message_to_server.start()
 receive_server_messages.start()
 client.send_message_to_server = send_message_to_server
