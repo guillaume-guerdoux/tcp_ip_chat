@@ -74,9 +74,8 @@ class ReceiveServerMessages(threading.Thread):
 host = input('Quelle IP voulez-vous contacter ? ')
 client = Client(host)
 send_message_to_server = SendMessageToServer(client)
-send_message_to_server.daemon = True 
+send_message_to_server.daemon = True 	# To close thread while in input function
 receive_server_messages = ReceiveServerMessages(client)
-#receive_server_messages.daemon = True
 send_message_to_server.start()
 receive_server_messages.start()
 client.send_message_to_server = send_message_to_server

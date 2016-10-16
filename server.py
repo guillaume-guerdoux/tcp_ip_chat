@@ -74,7 +74,7 @@ class ReceiveMessages(threading.Thread):
 						self.kill(client)
 
 	def kill(self, client):
-
+		self.server.clients_connected.remove(client)
 		client.close()
 		print("connection with client closed")
 		
