@@ -34,6 +34,13 @@ class Server(threading.Thread):
 				# Add client connection to list and to threads list of client connected
 				self.clients_connected.append(connection_with_client)
 
+	# Send receive message from one client to all clients
+	def broadcast(self, message, client):
+		list_clients_who_send_message = list(self.clients_connected)
+		list_clients_who_send_message.remove(client)
+		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message)
+
+
 	def kill(self):
 		self.running = False
 		print("Server closed")
@@ -72,6 +79,8 @@ class ReceiveMessages(threading.Thread):
 					print(msg_received)
 					if msg_received == "fin":
 						self.kill(client)
+					else:
+						self.server.broadcast(msg_received, client)
 
 	def kill(self, client):
 		self.server.clients_connected.remove(client)
