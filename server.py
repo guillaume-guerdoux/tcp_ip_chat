@@ -33,8 +33,6 @@ class Server(threading.Thread):
 				print("Connection with client done")
 				# Add client connection to list and to threads list of client connected
 				self.clients_connected.append(connection_with_client)
-				self.receive_client_messages.clients_connected.append(connection_with_client)
-				self.send_messages_to_clients.clients_connected.append(connection_with_client)
 
 	def kill(self):
 		self.running = False
@@ -54,7 +52,6 @@ Thread which is enabled server to receive client messages '''
 class ReceiveMessages(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.clients_connected = []
 		self.server = None
 		self.running = True
 
@@ -63,8 +60,8 @@ class ReceiveMessages(threading.Thread):
 			clients_to_read = []
 			try:
 				# Clients to read is a list of client who has sent a message
-				clients_to_read, wlist, xlist = select.select(self.clients_connected,
-					self.clients_connected, [],0.05)
+				clients_to_read, wlist, xlist = select.select(self.server.clients_connected,
+					self.server.clients_connected, [],0.05)
 			except Exception:
 				pass
 			else:
@@ -77,6 +74,7 @@ class ReceiveMessages(threading.Thread):
 						self.kill(client)
 
 	def kill(self, client):
+
 		client.close()
 		print("connection with client closed")
 		
@@ -86,7 +84,6 @@ Thread which is enabled server to send messages to clients '''
 class SendMessages(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.clients_connected = []
 		self.server = None
 		self.running = True
 
@@ -94,7 +91,7 @@ class SendMessages(threading.Thread):
 		while self.running == True:
 			msg_a_envoyer = input("> ")
 			if msg_a_envoyer:
-				self.send_message_to_list_of_client(msg_a_envoyer, self.clients_connected)
+				self.send_message_to_list_of_client(msg_a_envoyer, self.server.clients_connected)
 			if msg_a_envoyer == "fin":
 				self.kill()
 				
