@@ -2,7 +2,7 @@ import socket                   # Import socket module
 import select
 port = 60002                   # Reserve a port for your service.
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)            # Create a socket object
-host = ""   # Get local machine name
+host = ""     # Get local machine name
 connexion_principale.bind((host, port))            # Bind to the port
 connexion_principale.listen(5)                     # Now wait for client connection.
 

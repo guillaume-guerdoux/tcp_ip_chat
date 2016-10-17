@@ -1,13 +1,13 @@
 import socket
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "138.195.110.204"    
-port = 60002                
+host = "138.195.107.59"    
+port = 60003                
 
 try:
     connexion_avec_serveur.connect((host, port))
-except Exception, e:
-    alert("Something's wrong with %s. Exception type is %s" % (address, e))
-
+except Exception:
+    alert("Something's wrong with")
+print("coucou")
 with open('received_file', 'wb') as f:
     print ('file opened')
     while True:
