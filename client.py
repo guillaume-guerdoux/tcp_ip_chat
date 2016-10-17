@@ -1,7 +1,7 @@
 import socket
 import threading
 import select
-# TODO : Lock between receive and send connect 
+
 # TODO : Send files
 # TODO Qt for graphic interface
 
@@ -41,9 +41,33 @@ class SendMessageToServer(threading.Thread):
 		while self.running == True:
 			msg_a_envoyer = input("> ")
 			if msg_a_envoyer:
+				'''if msg_a_envoyer == "file":
+					nomFich = "fichiertexte.txt"
+					try:
+						msg_to_tell_sent_file = "ISENDYOUAFILE"
+						self.connection_with_server.send(msg_to_tell_sent_file.encode())
+						fich = open(nomFich, "rb")  # test if file exists
+						file_size = os.path.getsize(nomFich)
+						num = 0
+						if file_size > 1024:  # If file_size > 1024, send file by paquet
+							for i in range(file_size / 1024):
+								fich.seek(num, 0)  # Move from 1024 octets to 1024 octets
+								donnees = fich.read(1024)  # Read file 
+								connexion_avec_serveur.send(donnees)  # Send file by paquet
+								num = num + 1024
+						else:  # Send file in one time
+							donnees = fich.read()
+							connexion_avec_serveur.send(donnees)
+							fich.close()
+					except:
+						print(" >> le fichier '" + nomFich + "' est introuvable.")
+						time.sleep(2)
+						exit()
+
+				else:'''
 				self.connection_with_server.send(msg_a_envoyer.encode())
-			if msg_a_envoyer == "fin":
-				self.client.kill()
+				if msg_a_envoyer == "fin":
+					self.client.kill()
 
 ''' Receive message thread 
 

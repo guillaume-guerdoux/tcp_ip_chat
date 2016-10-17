@@ -7,10 +7,10 @@ import time
 
 
 
-hote = "127.0.0.1"
+hote = "138.195.107.59"
 port = 44460
 
-nomFich = "fichiertexte.txt"
+nomFich = "test"
 
 try:
     fich = open(nomFich, "rb")  # test si le fichier existe
@@ -27,7 +27,7 @@ try:
     connexion_avec_serveur.connect((hote, port))  # test si le serveur existe
     print("Connexion établie avec le serveur sur le port {}".format(port))
 except:
-    print(" >> le serveur '" + host + "' est introuvable.")
+    print(" >> le serveur '" + hote + "' est introuvable.")
     time.sleep(2)
     exit()
 
