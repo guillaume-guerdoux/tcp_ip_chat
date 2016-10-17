@@ -1,14 +1,14 @@
 import socket                   # Import socket module
 
 s = socket.socket()             # Create a socket object
-host = '138.195.107.59'    # Get local machine name
-port = 60000                    # Reserve a port for your service.
+host = '138.195.110.204'    # Get local machine name
+port = 60002                   # Reserve a port for your service.
 
 s.connect((host, port))
-s.send("Hello server!")
+s.send("Hello server!".encode())
 
 with open('received_file', 'wb') as f:
-    print 'file opened'
+    print('file opened')
     while True:
         print('receiving data...')
         data = s.recv(1024)
