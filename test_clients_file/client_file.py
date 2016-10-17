@@ -1,6 +1,6 @@
 import socket                   # Import socket module
 
-s = socket.socket()             # Create a socket object
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             # Create a socket object
 host = '138.195.110.204'    # Get local machine name
 port = 60002                   # Reserve a port for your service.
 

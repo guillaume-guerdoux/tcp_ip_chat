@@ -1,7 +1,7 @@
 import socket                   # Import socket module
 
 port = 60002                   # Reserve a port for your service.
-s = socket.socket()             # Create a socket object
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)            # Create a socket object
 host = '138.195.110.204'     # Get local machine name
 s.bind((host, port))            # Bind to the port
 s.listen(5)                     # Now wait for client connection.
