@@ -8,13 +8,14 @@ import select
 Thread which is enabled when server is created. Listen to new client connection '''
 
 class Server(threading.Thread):
-	def __init__(self, host, receive_client_messages, send_messages_to_clients):
+	def __init__(self, pseudo, host, receive_client_messages, send_messages_to_clients):
 		threading.Thread.__init__(self)
+		self.pseudo = pseudo
 		self.host = host
+		self.port = 44451
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
-		self.port = 44451
 		# Get thread to send and receiver messages
 		self.receive_client_messages = receive_client_messages
 		self.send_messages_to_clients = send_messages_to_clients
@@ -101,10 +102,12 @@ class SendMessages(threading.Thread):
 		while self.running == True:
 			msg_a_envoyer = input("")
 			if msg_a_envoyer:
-				self.send_message_to_list_of_client(msg_a_envoyer, self.server.clients_connected)
-			if msg_a_envoyer == "fin":
-				self.kill()
-				
+				if msg_a_envoyer=="fin":
+					self.send_message_to_list_of_client(msg_a_envoyer, self.server.clients_connected)
+					self.kill()
+				else:
+					self.send_message_to_list_of_client((self.server.pseudo + ": " 
+						+ msg_a_envoyer), self.server.clients_connected)
 				
 	# Send a message to a list of client
 	def send_message_to_list_of_client(self, message, list_client):
@@ -121,11 +124,12 @@ class SendMessages(threading.Thread):
 
 
 my_ip = input("Quel est ton ip?")
+pseudo = input('Choisis un pseudo : ')
 receive_client_messages = ReceiveMessages()
 send_messages_to_clients = SendMessages()
 send_messages_to_clients.start()
 receive_client_messages.start()
-server = Server(my_ip, receive_client_messages, send_messages_to_clients)
+server = Server(pseudo, my_ip, receive_client_messages, send_messages_to_clients)
 server.start()
 receive_client_messages.server = server
 send_messages_to_clients.server = server

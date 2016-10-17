@@ -4,16 +4,24 @@ import select
 
 # TODO : Send files
 # TODO Qt for graphic interface
+# TODO : login password to access chat
+# TODO : login before message
 
 ''' Client Class 
 
 Create the object client and connect to server '''
 class Client():
-	def __init__(self, host):
+	def __init__(self, pseudo, host):
+		self.pseudo = pseudo
 		self.host = host
-		self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.port = 44451
-		self.connection_with_server.connect((self.host, self.port))
+		try:
+			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.connection_with_server.connect((self.host, self.port))
+			print("Connexion établie avec le serveur sur le port {0}".format(self.port))
+		except:
+			print("Le serveur '" + self.host+ "' est introuvable.")
+			exit()
 		self.send_message_to_server = None
 		self.receive_server_messages = None
 
@@ -39,7 +47,7 @@ class SendMessageToServer(threading.Thread):
 
 	def run(self):
 		while self.running == True:
-			msg_a_envoyer = input("> ")
+			msg_a_envoyer = input("")
 			if msg_a_envoyer:
 				'''if msg_a_envoyer == "file":
 					nomFich = "fichiertexte.txt"
@@ -63,11 +71,13 @@ class SendMessageToServer(threading.Thread):
 						print(" >> le fichier '" + nomFich + "' est introuvable.")
 						time.sleep(2)
 						exit()
-
 				else:'''
-				self.connection_with_server.send(msg_a_envoyer.encode())
 				if msg_a_envoyer == "fin":
+					self.connection_with_server.send(msg_a_envoyer.encode())
 					self.client.kill()
+				else:
+					self.connection_with_server.send((self.client.pseudo + ': ' + msg_a_envoyer).encode())
+					
 
 ''' Receive message thread 
 
@@ -99,7 +109,8 @@ class ReceiveServerMessages(threading.Thread):
 
 
 host = input('Quelle IP voulez-vous contacter ? ')
-client = Client(host)
+pseudo = input ('Choisis un pseudo : ')
+client = Client(pseudo, host)
 send_message_to_server = SendMessageToServer(client)
 send_message_to_server.daemon = True 	# To close thread while in input function
 receive_server_messages = ReceiveServerMessages(client)
