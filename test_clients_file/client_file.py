@@ -1,18 +1,23 @@
 import socket
-connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "138.195.110.204"    
-port = 60002                
+connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = input('Quelle IP voulez-vous contacter ? ')
+port = 60003              
 
-try:
-    connexion_avec_serveur.connect((host, port))
-except Exception, e:
-    alert("Something's wrong with %s. Exception type is %s" % (address, e))
+connection_with_server.connect((host, port))
 
-with open('received_file', 'wb') as f:
+data = connection_with_server.recv(1024).decode()
+if data == "Voulez-vous recevoir un fichier ?":
+	response = input(data)
+	connection_with_server.send(response.encode())
+
+filename = input("Quel nom veut tu donner au fichier?")
+
+with open(filename, 'wb') as f:
     print ('file opened')
     while True:
+        data = connection_with_server.recv(1024)
         print('receiving data...')
-        data = connexion_avec_serveur.recv(1024)
+        
         print('data=%s', (data))
         if not data:
             break
@@ -21,5 +26,5 @@ with open('received_file', 'wb') as f:
 
 f.close()
 print('Successfully get the file')
-connexion_avec_serveur.close()
+connection_with_server.close()
 print('connection closed')
