@@ -36,6 +36,8 @@ class Server(threading.Thread):
 				# Add client connection to list and to threads list of client connected
 				self.clients_connected.append(connection_with_client)
 
+
+
 	# Send receive message from one client to all clients
 	def broadcast(self, message, client):
 		list_clients_who_send_message = list(self.clients_connected)
