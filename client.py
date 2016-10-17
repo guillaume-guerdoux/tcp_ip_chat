@@ -5,7 +5,6 @@ import select
 # TODO : Send files
 # TODO Qt for graphic interface
 
-verrou = threading.RLock() # Lock between receive and send thread
 ''' Client Class 
 
 Create the object client and connect to server '''
@@ -40,12 +39,11 @@ class SendMessageToServer(threading.Thread):
 
 	def run(self):
 		while self.running == True:
-			with verrou:
-				msg_a_envoyer = input("> ")
-				if msg_a_envoyer:
-					self.connection_with_server.send(msg_a_envoyer.encode())
-				if msg_a_envoyer == "fin":
-					self.client.kill()
+			msg_a_envoyer = input("> ")
+			if msg_a_envoyer:
+				self.connection_with_server.send(msg_a_envoyer.encode())
+			if msg_a_envoyer == "fin":
+				self.client.kill()
 
 ''' Receive message thread 
 
@@ -67,8 +65,7 @@ class ReceiveServerMessages(threading.Thread):
 				# Handle sockets
 				data = self.connection_with_server.recv(1024).decode()
 				if data:
-					with verrou:
-						print(data)
+					print(data)
 					if data =="fin":
 						self.client.kill()
 				else:

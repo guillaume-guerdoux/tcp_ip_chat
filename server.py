@@ -3,7 +3,6 @@ import threading
 import select
 
 
-verrou = threading.RLock()	# Lock between receive and send thread
 ''' Server Thread 
 
 Thread which is enabled when server is created. Listen to new client connection '''
@@ -78,8 +77,7 @@ class ReceiveMessages(threading.Thread):
 				for client in clients_to_read:
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
-					with verrou:
-						print(msg_received)
+					print(msg_received)
 					if msg_received == "fin":
 						self.kill(client)
 					else:
@@ -101,12 +99,11 @@ class SendMessages(threading.Thread):
 
 	def run(self):
 		while self.running == True:
-			with verrou:
-				msg_a_envoyer = input("")
-				if msg_a_envoyer:
-					self.send_message_to_list_of_client(msg_a_envoyer, self.server.clients_connected)
-				if msg_a_envoyer == "fin":
-					self.kill()
+			msg_a_envoyer = input("")
+			if msg_a_envoyer:
+				self.send_message_to_list_of_client(msg_a_envoyer, self.server.clients_connected)
+			if msg_a_envoyer == "fin":
+				self.kill()
 				
 				
 	# Send a message to a list of client
