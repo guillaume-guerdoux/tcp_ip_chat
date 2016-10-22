@@ -14,7 +14,7 @@ class Client():
 	def __init__(self, pseudo, host):
 		self.pseudo = pseudo
 		self.host = host
-		self.port = 44451
+		self.port = 44444
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
@@ -107,14 +107,14 @@ class ReceiveServerMessages(threading.Thread):
 
 
 
-
-host = input('Quelle IP voulez-vous contacter ? ')
-pseudo = input ('Choisis un pseudo : ')
-client = Client(pseudo, host)
-send_message_to_server = SendMessageToServer(client)
-send_message_to_server.daemon = True 	# To close thread while in input function
-receive_server_messages = ReceiveServerMessages(client)
-send_message_to_server.start()
-receive_server_messages.start()
-client.send_message_to_server = send_message_to_server
-client.receive_server_messages = receive_server_messages
+if __name__ == "__main__":
+	host = input('Quelle IP voulez-vous contacter ? ')
+	pseudo = input ('Choisis un pseudo : ')
+	client = Client(pseudo, host)
+	send_message_to_server = SendMessageToServer(client)
+	send_message_to_server.daemon = True 	# To close thread while in input function
+	receive_server_messages = ReceiveServerMessages(client)
+	send_message_to_server.start()
+	receive_server_messages.start()
+	client.send_message_to_server = send_message_to_server
+	client.receive_server_messages = receive_server_messages

@@ -2,17 +2,17 @@ import socket
 import threading
 import select
 
-
+from PyQt4.QtCore import QThread
 ''' Server Thread 
 
 Thread which is enabled when server is created. Listen to new client connection '''
 
-class Server(threading.Thread):
+class Server(QThread):
 	def __init__(self, pseudo, host, receive_client_messages, send_messages_to_clients):
-		threading.Thread.__init__(self)
+		QThread.__init__(self)
 		self.pseudo = pseudo
 		self.host = host
-		self.port = 44451
+		self.port = 44444
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
@@ -60,11 +60,12 @@ class Server(threading.Thread):
 ''' Receive message Thread 
 
 Thread which is enabled server to receive client messages '''
-class ReceiveMessages(threading.Thread):
-	def __init__(self):
-		threading.Thread.__init__(self)
+class ReceiveMessages(QThread):
+	def __init__(self, received_message_window):
+		QThread.__init__(self)
 		self.server = None
 		self.running = True
+		self.received_message_window = received_message_window 
 
 	def run(self):
 		while self.running == True:
@@ -80,6 +81,7 @@ class ReceiveMessages(threading.Thread):
 				for client in clients_to_read:
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
+					self.received_message_window.append(msg_received)
 					print(msg_received)
 					if msg_received == "fin":
 						self.kill(client)
@@ -94,9 +96,9 @@ class ReceiveMessages(threading.Thread):
 ''' Send message Thread 
 
 Thread which is enabled server to send messages to clients '''
-class SendMessages(threading.Thread):
+class SendMessages(QThread):
 	def __init__(self):
-		threading.Thread.__init__(self)
+		QThread.__init__(self)
 		self.server = None
 		self.running = True
 
@@ -124,16 +126,16 @@ class SendMessages(threading.Thread):
 		
 
 
-
-my_ip = input("Quel est ton ip?")
-pseudo = input('Choisis un pseudo : ')
-receive_client_messages = ReceiveMessages()
-send_messages_to_clients = SendMessages()
-send_messages_to_clients.start()
-receive_client_messages.start()
-server = Server(pseudo, my_ip, receive_client_messages, send_messages_to_clients)
-server.start()
-receive_client_messages.server = server
-send_messages_to_clients.server = server
+if __name__ == "__main__":
+	my_ip = input("Quel est ton ip?")
+	pseudo = input('Choisis un pseudo : ')
+	receive_client_messages = ReceiveMessages()
+	send_messages_to_clients = SendMessages()
+	send_messages_to_clients.start()
+	receive_client_messages.start()
+	server = Server(pseudo, my_ip, receive_client_messages, send_messages_to_clients)
+	server.start()
+	receive_client_messages.server = server
+	send_messages_to_clients.server = server
 
 
