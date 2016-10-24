@@ -1,2 +1,2 @@
 -------------- READ ME ----------------
-Install pyqt4 (sudo apt-get python-qt4
+Install pyqt4 (sudo apt-get python-qt4)
