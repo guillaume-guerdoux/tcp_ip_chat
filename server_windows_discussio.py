@@ -1,5 +1,5 @@
 import sys
-from server import Server, ReceiveMessages, SendMessages
+from server import Server, ReceiveMessages, SendMessages, Broadcast, CloseMainConnection
 from PyQt4 import QtGui
 
 
@@ -12,15 +12,17 @@ class ServerWindow(QtGui.QWidget):
 		self.send_message_windows = QtGui.QLineEdit()
 		self.send_message_button = QtGui.QPushButton("Envoyer")
 
-		self.receive_client_messages = ReceiveMessages(self.received_message_window)
-		self.send_messages_to_clients = SendMessages()
-		self.receive_client_messages.start()
-		self.send_messages_to_clients.start()
-		self.server = Server(pseudo, my_ip, self.receive_client_messages, self.send_messages_to_clients)
-		self.server.start()
-		self.receive_client_messages.server = self.server
-		self.send_messages_to_clients.server = self.server
+		self.server = Server(pseudo, my_ip)
+		self.close_main_connection = CloseMainConnection(self.server)
+		self.send_messages_to_clients = SendMessages(self.server, self.close_main_connection)
+		self.broadcast = Broadcast(self.send_messages_to_clients)
+		self.receive_client_messages = ReceiveMessages(self.server, self.broadcast, self.received_message_window)
 
+		self.close_main_connection.receive_client_messages = self.receive_client_messages
+
+		self.server.start()
+		self.send_messages_to_clients.start()
+		self.receive_client_messages.start()
 		self.initUI()
 	
 	def initUI(self):

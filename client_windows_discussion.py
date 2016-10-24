@@ -29,7 +29,7 @@ class ClientWindow(QtGui.QWidget):
 		grid = QtGui.QGridLayout()
 		grid.setSpacing(10)
 
-		grid.addWidget(self.received_message_window, 1,0, 4, 2)
+		grid.addWidget(self.received_message_window, 1, 0, 4, 2)
 		grid.addWidget(self.send_message_windows,5,0)
 		grid.addWidget(self.send_message_button,5,1)
 
@@ -45,10 +45,10 @@ class ClientWindow(QtGui.QWidget):
 		message_to_send = self.send_message_windows.text()
 		if message_to_send:
 			if message_to_send=="fin":
-				self.send_message_to_server.connection_with_server.send(message_to_send.encode())
+				self.send_message_to_server.client.connection_with_server.send(message_to_send.encode())
 				self.client.kill()
 			else:
-				self.send_message_to_server.connection_with_server.send((self.client.pseudo + ': ' + message_to_send).encode())
+				self.send_message_to_server.client.connection_with_server.send((self.client.pseudo + ': ' + message_to_send).encode())
 			self.received_message_window.append(message_to_send)
 			self.send_message_windows.clear()
 

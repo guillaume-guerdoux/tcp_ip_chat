@@ -8,7 +8,7 @@ from PyQt4.QtCore import QThread
 Thread which is enabled when server is created. Listen to new client connection '''
 
 class Server(QThread):
-	def __init__(self, pseudo, host, receive_client_messages, send_messages_to_clients):
+	def __init__(self, pseudo, host):
 		QThread.__init__(self)
 		self.pseudo = pseudo
 		self.host = host
@@ -17,8 +17,8 @@ class Server(QThread):
 		self.main_connection = None
 		self.clients_connected = []
 		# Get thread to send and receiver messages
-		self.receive_client_messages = receive_client_messages
-		self.send_messages_to_clients = send_messages_to_clients
+		#self.receive_client_messages = receive_client_messages
+		#self.send_messages_to_clients = send_messages_to_clients
 
 	def run(self):
 		# Create main connection
@@ -35,36 +35,17 @@ class Server(QThread):
 				print("Connection with client done")
 				# Add client connection to list and to threads list of client connected
 				self.clients_connected.append(connection_with_client)
-
-
-
-	# Send receive message from one client to all clients
-	def broadcast(self, message, client):
-		list_clients_who_send_message = list(self.clients_connected)
-		list_clients_who_send_message.remove(client)
-		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message)
-
-
-	def kill(self):
-		self.running = False
-		print("Server closed")
-		self.receive_client_messages.running = False
-		print("receive client message thread closed")
-		for client in self.clients_connected:
-			client.close()
-		print("connection with all clients closed")
-		self.main_connection.close()
-		print("main connection closed")
 		
 
 ''' Receive message Thread 
 
 Thread which is enabled server to receive client messages '''
 class ReceiveMessages(QThread):
-	def __init__(self, received_message_window):
+	def __init__(self, server, broadcast, received_message_window):
 		QThread.__init__(self)
-		self.server = None
+		self.server = server
 		self.running = True
+		self.broadcast = broadcast
 		self.received_message_window = received_message_window 
 
 	def run(self):
@@ -86,7 +67,9 @@ class ReceiveMessages(QThread):
 					if msg_received == "fin":
 						self.kill(client)
 					else:
-						self.server.broadcast(msg_received, client)
+						self.broadcast.broadcast(msg_received, client)
+
+	
 
 	def kill(self, client):
 		self.server.clients_connected.remove(client)
@@ -97,11 +80,11 @@ class ReceiveMessages(QThread):
 
 Thread which is enabled server to send messages to clients '''
 class SendMessages(QThread):
-	def __init__(self):
+	def __init__(self, server, close_main_connection):
 		QThread.__init__(self)
-		self.server = None
+		self.server = server
 		self.running = True
-
+		self.close_main_connection = close_main_connection
 	def run(self):
 		while self.running == True:
 			msg_a_envoyer = input("")
@@ -121,16 +104,44 @@ class SendMessages(QThread):
 	def kill(self):
 		self.running = False
 		print("send message thread closed")
-		self.server.kill()
-		
-		
+		self.close_main_connection.kill()
+
+class Broadcast():
+	def __init__(self, send_messages_to_clients):
+		self.send_messages_to_clients = send_messages_to_clients
+
+	# Send receive message from one client to all clients
+	def broadcast(self, message, client):
+		list_clients_who_send_message = list(self.send_messages_to_clients.server.clients_connected)
+		list_clients_who_send_message.remove(client)
+		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message) 		
+
+class CloseMainConnection():
+	def __init__(self, server):
+		self.server = server
+		self.receive_client_messages = None
+
+	def kill(self):
+		self.server.running = False
+		print("Server closed")
+		self.receive_client_messages.running = False
+		print("receive client message thread closed")
+		for client in self.server.clients_connected:
+			client.close()
+		print("connection with all clients closed")
+		self.server.main_connection.close()
+		print("main connection closed")
 
 
 if __name__ == "__main__":
 	my_ip = input("Quel est ton ip?")
 	pseudo = input('Choisis un pseudo : ')
+	server = Server(pseudo, my_ip)
+	close_main_connection = CloseMainConnection(server)
+	send_messages_to_clients = SendMessages(server, close_main_connection)
+	broadcast = Broadcast(send_messages_to_clients)
 	receive_client_messages = ReceiveMessages()
-	send_messages_to_clients = SendMessages()
+	
 	send_messages_to_clients.start()
 	receive_client_messages.start()
 	server = Server(pseudo, my_ip, receive_client_messages, send_messages_to_clients)
