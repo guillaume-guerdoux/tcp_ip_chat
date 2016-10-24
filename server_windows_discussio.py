@@ -12,7 +12,7 @@ class ServerWindow(QtGui.QWidget):
 		self.send_message_windows = QtGui.QLineEdit()
 		self.send_message_button = QtGui.QPushButton("Envoyer")
 
-		self.server = Server(pseudo, my_ip)
+		self.server = Server(pseudo, my_ip, self.received_message_window)
 		self.close_main_connection = CloseMainConnection(self.server)
 		self.send_messages_to_clients = SendMessages(self.server, self.close_main_connection)
 		self.broadcast = Broadcast(self.send_messages_to_clients)

@@ -11,16 +11,17 @@ import select
 
 Create the object client and connect to server '''
 class Client():
-	def __init__(self, pseudo, host):
+	def __init__(self, pseudo, host, received_message_window):
 		self.pseudo = pseudo
 		self.host = host
+		self.received_message_window = received_message_window
 		self.port = 44445
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
-			print("Connexion établie avec le serveur sur le port {0}".format(self.port))
+			self.received_message_window.append("Vous avez rejoint la discussion")
 		except:
-			print("Le serveur '" + self.host+ "' est introuvable.")
+			self.received_message_window.append("Le serveur '" + self.host+ "' est introuvable.")
 			exit()
 		self.send_message_to_server = None
 		self.receive_server_messages = None
@@ -83,6 +84,7 @@ class ReceiveServerMessages(threading.Thread):
 						self.client.kill()
 				else:
 					break
+
 
 
 

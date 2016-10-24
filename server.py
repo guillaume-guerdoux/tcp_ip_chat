@@ -8,10 +8,11 @@ from PyQt4.QtCore import QThread
 Thread which is enabled when server is created. Listen to new client connection '''
 
 class Server(QThread):
-	def __init__(self, pseudo, host):
+	def __init__(self, pseudo, host, received_message_window):
 		QThread.__init__(self)
 		self.pseudo = pseudo
 		self.host = host
+		self.received_message_window = received_message_window
 		self.port = 44445
 		self.running = True
 		self.main_connection = None
@@ -32,7 +33,7 @@ class Server(QThread):
 			for connection in ask_connections:
 				# Accept client connection
 				connection_with_client, connection_infos = self.main_connection.accept()
-				print("Connection with client done")
+				self.received_message_window.append("Une nouvelle personne a rejoint la conversation")
 				# Add client connection to list and to threads list of client connected
 				self.clients_connected.append(connection_with_client)
 		
