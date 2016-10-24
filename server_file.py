@@ -15,30 +15,23 @@ connexion_principale.listen(5)                     # Now wait for client connect
 print('Server listening....')
 connexion_avec_client, infos_connexion = connexion_principale.accept()     # Establish connection with client.
 print('Got connection from', infos_connexion)
-
-msg_received = ""
-
-while msg_received not in ["oui", "non"]:
-	msg_send = "Voulez-vous recevoir un fichier ?"
-	connexion_avec_client.send(msg_send.encode())
-	print("en attente de la validation client")
-	msg_received = connexion_avec_client.recv(1024)
-	msg_received = msg_received.decode()
-	print (msg_received)
-
-if msg_received == 'non':
-	f.close()
-	print('le client ne veut pas recevoir le fichier')
-	connexion_avec_client.close()
-	False
-elif msg_received == 'oui':
-	filename=input('chemin du fichier : ')
+filename=input('chemin du fichier : ')
+msg_send2 = "Envoi du fichier"
+connexion_avec_client.send(msg_send2.encode())
+msg_received2 = connexion_avec_client.recv(1024)
+msg_received2 = msg_received2.decode()
+if msg_received2 == "file opened":
+	msg_send3 = "Go"
+	connexion_avec_client.send(msg_send3.encode())
 	f = open(filename,'rb')
 	l = f.read(1024)
 	while (l):
 		connexion_avec_client.send(l)
 		print('Sent ',repr(l))
 		l = f.read(1024)
+	msg_received3 = connexion_avec_client.recv(1024)
+	msg_received3 = msg_received3.decode()
+	print (msg_received3)
 	f.close()
 	print('Done sending')
 	connexion_avec_client.close()
