@@ -14,7 +14,7 @@ class Client():
 	def __init__(self, pseudo, host):
 		self.pseudo = pseudo
 		self.host = host
-		self.port = 44444
+		self.port = 44445
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
@@ -84,11 +84,12 @@ class SendMessageToServer(threading.Thread):
 Thread which is enabled client to receive messages from server '''
 
 class ReceiveServerMessages(threading.Thread):
-	def __init__(self, client):
+	def __init__(self, client, received_message_window):
 		threading.Thread.__init__(self)
 		self.client = client
 		self.connection_with_server = self.client.connection_with_server
 		self.running = True
+		self.received_message_window = received_message_window 
 
 	def run(self):
 		while self.running == True:
@@ -99,6 +100,7 @@ class ReceiveServerMessages(threading.Thread):
 				# Handle sockets
 				data = self.connection_with_server.recv(1024).decode()
 				if data:
+					self.received_message_window.append(data)
 					print(data)
 					if data =="fin":
 						self.client.kill()

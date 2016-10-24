@@ -12,7 +12,7 @@ class Server(QThread):
 		QThread.__init__(self)
 		self.pseudo = pseudo
 		self.host = host
-		self.port = 44444
+		self.port = 44445
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
