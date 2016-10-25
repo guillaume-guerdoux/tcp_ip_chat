@@ -23,39 +23,14 @@ class Client():
 		except:
 			self.received_message_window.append("Le serveur '" + self.host+ "' est introuvable.")
 			exit()
-		self.send_message_to_server = None
 		self.receive_server_messages = None
 
 	def kill(self):
-		self.send_message_to_server.running = False
-		print("send message thread closed")
 		self.receive_server_messages.running = False
 		print("receive server message thread closed")
 		self.connection_with_server.close()
 		print("Connection closed")
 		
-
-''' Send message thread 
-
-Thread which is enabled client to send messages to server '''
-
-class SendMessageToServer(threading.Thread):
-	def __init__(self, client):
-		threading.Thread.__init__(self)
-		self.client = client
-		#self.connection_with_server = self.client.connection_with_server
-		self.running = True
-
-	def run(self):
-		while self.running == True:
-			msg_a_envoyer = input("")
-			if msg_a_envoyer:
-				if msg_a_envoyer == "fin":
-					self.client.connection_with_server.send(msg_a_envoyer.encode())
-					self.client.kill()
-				else:
-					self.client.connection_with_server.send((self.client.pseudo + ': ' + msg_a_envoyer).encode())
-					
 
 ''' Receive message thread 
 
@@ -92,10 +67,6 @@ if __name__ == "__main__":
 	host = input('Quelle IP voulez-vous contacter ? ')
 	pseudo = input ('Choisis un pseudo : ')
 	client = Client(pseudo, host)
-	send_message_to_server = SendMessageToServer(client)
-	send_message_to_server.daemon = True 	# To close thread while in input function
 	receive_server_messages = ReceiveServerMessages(client)
-	send_message_to_server.start()
 	receive_server_messages.start()
-	client.send_message_to_server = send_message_to_server
 	client.receive_server_messages = receive_server_messages

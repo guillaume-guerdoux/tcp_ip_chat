@@ -72,7 +72,6 @@ class ReceiveMessages(QThread):
 						self.broadcast.broadcast(msg_received, client)
 
 	
-
 	def kill(self, client):
 		self.server.clients_connected.remove(client)
 		client.close()
@@ -81,30 +80,17 @@ class ReceiveMessages(QThread):
 ''' Send message Thread 
 
 Thread which is enabled server to send messages to clients '''
-class SendMessages(QThread):
+class SendMessages():
 	def __init__(self, server, close_main_connection):
-		QThread.__init__(self)
 		self.server = server
-		self.running = True
 		self.close_main_connection = close_main_connection
-	def run(self):
-		while self.running == True:
-			msg_a_envoyer = input("")
-			if msg_a_envoyer:
-				if msg_a_envoyer=="fin":
-					self.send_message_to_list_of_client(msg_a_envoyer, self.server.clients_connected)
-					self.kill()
-				else:
-					self.send_message_to_list_of_client((self.server.pseudo + ": " 
-						+ msg_a_envoyer), self.server.clients_connected)
-				
+
 	# Send a message to a list of client
 	def send_message_to_list_of_client(self, message, list_client):
 		for client in list_client:
 			client.send(message.encode())
 
 	def kill(self):
-		self.running = False
 		print("send message thread closed")
 		self.close_main_connection.kill()
 

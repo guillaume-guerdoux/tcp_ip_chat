@@ -21,7 +21,6 @@ class ServerWindow(QtGui.QWidget):
 		self.close_main_connection.receive_client_messages = self.receive_client_messages
 
 		self.server.start()
-		self.send_messages_to_clients.start()
 		self.receive_client_messages.start()
 		self.initUI()
 	
