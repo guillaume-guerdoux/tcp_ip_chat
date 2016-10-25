@@ -13,10 +13,12 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44445
+		self.port = 44448
+		self.file_port = 44449
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
+		self.client_connected_for_file_sending = []
 		# Get thread to send and receiver messages
 		#self.receive_client_messages = receive_client_messages
 		#self.send_messages_to_clients = send_messages_to_clients
@@ -26,6 +28,11 @@ class Server(QThread):
 		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.main_connection.bind((self.host,self.port))
 		self.main_connection.listen(5)
+
+		# Create connection for file sending
+		self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.main_connection_file.bind((self.host,self.file_port))
+		self.main_connection_file.listen(5)
 
 		while self.running == True:
 			# Get all new connections asked by client
@@ -38,6 +45,14 @@ class Server(QThread):
 					self.received_message_window.append("Une nouvelle personne a rejoint la conversation")
 					# Add client connection to list and to threads list of client connected
 					self.clients_connected.append(connection_with_client)
+
+				ask_connections_file, wlist, xlist = select.select([self.main_connection_file], [], [], 0.05)
+				for connection in ask_connections_file:
+					# Accept client connection for file
+					connection_with_client, connection_infos = self.main_connection_file.accept()
+					print("accepté for file")
+					# Add client connection to list and to threads list of client connected for file
+					self.client_connected_for_file_sending.append(connection_with_client)
 			except OSError:
 				self.running = False
 				
@@ -121,8 +136,12 @@ class CloseMainConnection():
 		for client in self.server.clients_connected:
 			client.close()
 		print("connection with all clients closed")
+		for client in self.server.client_connected_for_file_sending:
+			client.close()
+		print("connection with all clients closed file")
 		self.server.main_connection.close()
-		print("main connection closed")
+		self.server.main_connection_file.close()
+		print("main connection file closed")
 
 
 if __name__ == "__main__":

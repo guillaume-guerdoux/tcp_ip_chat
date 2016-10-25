@@ -15,21 +15,30 @@ class Client():
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44445
+		self.port = 44448
+		self.file_port = 44449
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
+
+			self.file_connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.file_connection_with_server.connect((self.host, self.file_port))
 			self.received_message_window.append("Vous avez rejoint la discussion")
 		except:
 			self.received_message_window.append("Le serveur '" + self.host+ "' est introuvable.")
 			exit()
 		self.receive_server_messages = None
+		self.receive_server_files = None
 
 	def kill(self):
 		self.receive_server_messages.running = False
 		print("receive server message thread closed")
+		self.receive_server_files.running = False
+		print("receive server file thread closed")
 		self.connection_with_server.close()
 		print("Connection closed")
+		self.file_connection_with_server.close()
+		print("File Connection closed")
 		
 
 ''' Receive message thread 
@@ -59,6 +68,36 @@ class ReceiveServerMessages(threading.Thread):
 						if data =="fin":
 							self.running = False
 							self.client.kill()
+					else:
+						break
+			except OSError:
+				self.running = False
+				self.client.kill()
+
+''' Receive File thread 
+
+Thread which is enabled client to receive files from server '''
+
+class ReceiveServerFiles(threading.Thread):
+	def __init__(self, client, received_message_window):
+		threading.Thread.__init__(self)
+		self.client = client
+		#self.connection_with_server = self.client.connection_with_server
+		self.running = True
+		self.received_message_window = received_message_window 
+
+	def run(self):
+		while self.running == True:
+			try:
+				inputready,outputready,exceptready \
+				= select.select([self.client.file_connection_with_server],[],[])
+				#print(inputready)
+				for input_item in inputready:
+					# Handle sockets
+					data = self.client.file_connection_with_server.recv(1024).decode()
+					if data:
+						#self.received_message_window.append(data)
+						print(data)
 					else:
 						break
 			except OSError:

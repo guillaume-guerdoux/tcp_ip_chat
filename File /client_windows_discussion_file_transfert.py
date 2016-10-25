@@ -1,5 +1,5 @@
 import sys
-from client import Client, ReceiveServerMessages
+from client import Client, ReceiveServerMessages, ReceiveServerFiles
 from PyQt4 import QtGui
 
 
@@ -15,9 +15,13 @@ class ClientWindow(QtGui.QWidget):
 
 		self.client = Client(pseudo, my_ip, self.received_message_window)
 		self.receive_server_messages = ReceiveServerMessages(self.client, self.received_message_window)
+		self.receive_server_files = ReceiveServerFiles(self.client, self.received_message_window)
 
 		self.receive_server_messages.start()
+		self.receive_server_files.start()
 		self.client.receive_server_messages = self.receive_server_messages
+		self.client.receive_server_files = self.receive_server_files
+
 
 		self.initUI()
 	
