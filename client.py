@@ -46,22 +46,25 @@ class ReceiveServerMessages(threading.Thread):
 
 	def run(self):
 		while self.running == True:
-			inputready,outputready,exceptready \
-			= select.select ([self.client.connection_with_server],[],[])
-			#print(inputready)
-			for input_item in inputready:
-				# Handle sockets
-				data = self.client.connection_with_server.recv(1024).decode()
-				if data:
-					if data!="file":
+			try:
+				inputready,outputready,exceptready \
+				= select.select ([self.client.connection_with_server],[],[])
+				#print(inputready)
+				for input_item in inputready:
+					# Handle sockets
+					data = self.client.connection_with_server.recv(1024).decode()
+					if data:
 						self.received_message_window.append(data)
 						print(data)
 						if data =="fin":
+							self.running = False
 							self.client.kill()
 					else:
 						break
-				else:
-					break
+			except OSError:
+				self.running = False
+				self.client.kill()
+
 
 if __name__ == "__main__":
 	host = input('Quelle IP voulez-vous contacter ? ')

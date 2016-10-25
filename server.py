@@ -29,14 +29,18 @@ class Server(QThread):
 
 		while self.running == True:
 			# Get all new connections asked by client
-			ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
-			for connection in ask_connections:
-				# Accept client connection
-				connection_with_client, connection_infos = self.main_connection.accept()
-				print("accepté")
-				self.received_message_window.append("Une nouvelle personne a rejoint la conversation")
-				# Add client connection to list and to threads list of client connected
-				self.clients_connected.append(connection_with_client)
+			try:
+				ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
+				for connection in ask_connections:
+					# Accept client connection
+					connection_with_client, connection_infos = self.main_connection.accept()
+					print("accepté")
+					self.received_message_window.append("Une nouvelle personne a rejoint la conversation")
+					# Add client connection to list and to threads list of client connected
+					self.clients_connected.append(connection_with_client)
+			except OSError:
+				self.running = False
+				
 		
 
 ''' Receive message Thread 
