@@ -22,14 +22,12 @@ class Server(QThread):
 		#self.send_messages_to_clients = send_messages_to_clients
 
 	def run(self):
-		print("start")
 		# Create main connection
 		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.main_connection.bind((self.host,self.port))
 		self.main_connection.listen(5)
 
 		while self.running == True:
-			print("true")
 			# Get all new connections asked by client
 			ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
 			for connection in ask_connections:
