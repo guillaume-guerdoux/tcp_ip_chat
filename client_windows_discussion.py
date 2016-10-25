@@ -11,6 +11,7 @@ class ClientWindow(QtGui.QWidget):
 		self.received_message_window = QtGui.QTextEdit()
 		self.send_message_windows = QtGui.QLineEdit()
 		self.send_message_button = QtGui.QPushButton("Envoyer")
+		self.setWindowIcon(QtGui.QIcon('logo_messenger.png'))
 
 		self.client = Client(pseudo, my_ip, self.received_message_window)
 		self.receive_server_messages = ReceiveServerMessages(self.client, self.received_message_window)
