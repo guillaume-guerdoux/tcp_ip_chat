@@ -14,7 +14,7 @@ class ClientWindow(QtGui.QWidget):
 
 		self.client = Client(pseudo, my_ip, self.received_message_window)
 		self.receive_server_messages = ReceiveServerMessages(self.client, self.received_message_window)
-		
+
 		self.receive_server_messages.start()
 		self.client.receive_server_messages = self.receive_server_messages
 
@@ -32,7 +32,8 @@ class ClientWindow(QtGui.QWidget):
 		self.setLayout(grid) 
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
-
+		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
+		
 		self.setGeometry(300, 300, 350, 300)
 		self.setWindowTitle('Ptit Chat - Client')    
 		self.show()

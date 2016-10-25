@@ -36,9 +36,10 @@ class ServerWindow(QtGui.QWidget):
 		self.setLayout(grid) 
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
-
+		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
+		
 		self.setGeometry(300, 300, 350, 300)
-		self.setWindowTitle('Ptit Chat')    
+		self.setWindowTitle('Ptit Chat - Server')    
 		self.show()
 
 	def send_text_messages(self):

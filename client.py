@@ -53,15 +53,15 @@ class ReceiveServerMessages(threading.Thread):
 				# Handle sockets
 				data = self.client.connection_with_server.recv(1024).decode()
 				if data:
-					self.received_message_window.append(data)
-					print(data)
-					if data =="fin":
-						self.client.kill()
+					if data!="file":
+						self.received_message_window.append(data)
+						print(data)
+						if data =="fin":
+							self.client.kill()
+					else:
+						break
 				else:
 					break
-
-
-
 
 if __name__ == "__main__":
 	host = input('Quelle IP voulez-vous contacter ? ')
