@@ -1,5 +1,5 @@
 import sys
-from client import Client, ReceiveServerMessages, ReceiveServerFiles
+from client_file_transfert import Client, ReceiveServerMessages, ReceiveServerFiles
 from PyQt4 import QtGui
 
 
@@ -24,7 +24,7 @@ class ClientWindow(QtGui.QWidget):
 
 
 		self.initUI()
-	
+
 	def initUI(self):
 
 		grid = QtGui.QGridLayout()
@@ -34,13 +34,13 @@ class ClientWindow(QtGui.QWidget):
 		grid.addWidget(self.send_message_windows,5,0)
 		grid.addWidget(self.send_message_button,5,1)
 
-		self.setLayout(grid) 
+		self.setLayout(grid)
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
 		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
-		
+
 		self.setGeometry(300, 300, 350, 300)
-		self.setWindowTitle('Ptit Chat - Client')    
+		self.setWindowTitle('Ptit Chat - Client')
 		self.show()
 
 	def send_text_messages(self):

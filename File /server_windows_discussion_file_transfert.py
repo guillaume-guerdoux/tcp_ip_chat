@@ -1,5 +1,5 @@
 import sys
-from server import Server, ReceiveMessages, SendMessages, Broadcast, CloseMainConnection
+from server_file_transfert import Server, ReceiveMessages, SendMessages, Broadcast, CloseMainConnection
 from PyQt4 import QtGui
 
 
@@ -24,7 +24,7 @@ class ServerWindow(QtGui.QWidget):
 		self.server.start()
 		self.receive_client_messages.start()
 		self.initUI()
-	
+
 	def initUI(self):
 
 		grid = QtGui.QGridLayout()
@@ -34,25 +34,25 @@ class ServerWindow(QtGui.QWidget):
 		grid.addWidget(self.send_message_windows,5,0)
 		grid.addWidget(self.send_message_button,5,1)
 
-		self.setLayout(grid) 
+		self.setLayout(grid)
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
 		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
-		
+
 		self.setGeometry(300, 300, 350, 300)
-		self.setWindowTitle('Ptit Chat - Server')    
+		self.setWindowTitle('Ptit Chat - Server')
 		self.show()
 
 	def send_text_messages(self):
 		message_to_send = self.send_message_windows.text()
 		if message_to_send:
 			if message_to_send=="fin":
-				self.send_messages_to_clients.send_message_to_list_of_client(message_to_send, 
+				self.send_messages_to_clients.send_message_to_list_of_client(message_to_send,
 					self.send_messages_to_clients.server.clients_connected)
 				self.send_messages_to_clients.kill()
 			else:
-				self.send_messages_to_clients.send_message_to_list_of_client((self.send_messages_to_clients.server.pseudo 
-					+ ": " 
+				self.send_messages_to_clients.send_message_to_list_of_client((self.send_messages_to_clients.server.pseudo
+					+ ": "
 					+ message_to_send), self.send_messages_to_clients.server.clients_connected)
 		self.received_message_window.append(message_to_send)
 		self.send_message_windows.clear()
