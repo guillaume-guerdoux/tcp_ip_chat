@@ -33,7 +33,7 @@ class ServerWindow(QWidget):
 		grid = QGridLayout()
 		grid.setSpacing(10)
 
-		grid.addWidget(self.received_message_window, 1,0, 4, 2)
+		grid.addWidget(self.received_message_window, 1,0, 4, 3)
 		grid.addWidget(self.choose_file_button,5,0)
 		grid.addWidget(self.send_message_windows,5,1)
 		grid.addWidget(self.send_message_button,5,2)
@@ -56,8 +56,6 @@ class ServerWindow(QWidget):
 					self.send_messages_to_clients.server.clients_connected)
 				self.send_messages_to_clients.kill()
 				self.received_message_window.append(message_to_send)
-			if message_to_send=="file":
-				self.handle_file_sending.handle_file_sending()
 			else:
 				self.send_messages_to_clients.send_message_to_list_of_client((self.send_messages_to_clients.server.pseudo
 					+ ": "
@@ -70,7 +68,7 @@ class ServerWindow(QWidget):
 		if dlg.exec_():
 			filenames = dlg.selectedFiles()
 			for file in filenames:
-				print(file)
+				self.handle_file_sending.handle_file_sending(file)
 def main():
 	#my_ip = input("Quel est ton ip?")
 	#pseudo = input('Choisis un pseudo : ')
