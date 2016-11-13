@@ -13,8 +13,8 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44448
-		self.file_port = 44449
+		self.port = 44462
+		self.file_port = 44463
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
@@ -113,6 +113,31 @@ class SendMessages():
 		print("send message thread closed")
 		self.close_main_connection.kill()
 
+class HandleFileSending():
+	def __init__(self, server, received_message_window):
+		self.server = server
+		self.received_message_window = received_message_window 
+
+	def handle_file_sending(self):
+		# TODO : Be able to select a file in pyqt
+		filename='File'
+		warning_msg = "file_to_sent"
+		for client in self.server.client_connected_for_file_sending:
+			client.send(warning_msg.encode())
+			file_openend_message = client.recv(1024) #Wait for opened file on client file
+			file_openend_message = file_openend_message.decode()
+			if file_openend_message == "file_opened":
+				sending_file_message = "file_is_sending" #Send the file 
+				client.send(sending_file_message.encode())
+				f = open(filename,'rb') #Open the file in reading mode
+				l = f.read(1024)
+				while (l):
+					client.send(l)
+					l = f.read(1024)
+				f.close() #close the file 
+				False
+				self.received_message_window.append("Fichier envoyé")
+
 class Broadcast():
 	def __init__(self, send_messages_to_clients):
 		self.send_messages_to_clients = send_messages_to_clients
@@ -145,8 +170,10 @@ class CloseMainConnection():
 
 
 if __name__ == "__main__":
-	my_ip = input("Quel est ton ip?")
-	pseudo = input('Choisis un pseudo : ')
+	#my_ip = input("Quel est ton ip?")
+	#pseudo = input('Choisis un pseudo : ')
+	my_ip = "127.0.0.1"
+	pseudo = "ryan"
 	server = Server(pseudo, my_ip)
 	close_main_connection = CloseMainConnection(server)
 	send_messages_to_clients = SendMessages(server, close_main_connection)

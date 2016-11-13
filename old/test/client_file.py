@@ -1,15 +1,15 @@
 import socket
 connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = input('Quelle IP voulez-vous contacter ? ')
-port = 60003              
+port = 60005              
 
 connection_with_server.connect((host, port))
 
-filename = input("Quel nom veut tu donner au fichier?")
+#filename = input("Quel nom veut tu donner au fichier?")
 
 data2 = connection_with_server.recv(1024).decode()
 if data2 == "Envoi du fichier" : 
-	with open(filename, 'wb') as f:  #create the file
+	with open('new_file', 'wb') as f:  #create the file
 		print ('file opened')
 		msg_send = "file opened"
 		connection_with_server.send(msg_send.encode())

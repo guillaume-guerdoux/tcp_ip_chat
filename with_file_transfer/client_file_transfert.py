@@ -15,14 +15,17 @@ class Client():
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44448
-		self.file_port = 44449
+		self.port = 44462
+		self.file_port = 44463
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
+			print("connetion with server done")
 
 			self.file_connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.file_connection_with_server.connect((self.host, self.file_port))
+			print("connetion with server file done")
+
 			self.received_message_window.append("Vous avez rejoint la discussion")
 		except:
 			self.received_message_window.append("Le serveur '" + self.host+ "' est introuvable.")
@@ -96,8 +99,22 @@ class ReceiveServerFiles(threading.Thread):
 					# Handle sockets
 					data = self.client.file_connection_with_server.recv(1024).decode()
 					if data:
-						#self.received_message_window.append(data)
-						print(data)
+						if data == "file_to_sent" :
+							# TODO : Get same file name as server
+							with open('new_file', 'wb') as f:  #create the file
+								msg_send = "file_opened"
+								self.client.file_connection_with_server.send(msg_send.encode())
+								file_reception_message = self.client.file_connection_with_server.recv(1024).decode()
+								if file_reception_message == "file_is_sending": #file reception started
+									receiving = True
+									while receiving == True:
+										file_data = self.client.file_connection_with_server.recv(1024)
+										if not file_data:
+											break
+										f.write(file_data)
+										receiving = False
+									f.close()
+									self.received_message_window.append("Fichier bien reçu")
 					else:
 						break
 			except OSError:
@@ -106,8 +123,10 @@ class ReceiveServerFiles(threading.Thread):
 
 
 if __name__ == "__main__":
-	host = input('Quelle IP voulez-vous contacter ? ')
-	pseudo = input ('Choisis un pseudo : ')
+	#host = input('Quelle IP voulez-vous contacter ? ')
+	#pseudo = input ('Choisis un pseudo : ')
+	host = '127.0.0.1'
+	pseudo = "test"
 	client = Client(pseudo, host)
 	receive_server_messages = ReceiveServerMessages(client)
 	receive_server_messages.start()
