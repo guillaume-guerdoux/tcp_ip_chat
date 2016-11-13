@@ -120,7 +120,7 @@ class HandleFileSending():
 
 	def handle_file_sending(self):
 		# TODO : Be able to select a file in pyqt
-		filename='File'
+		filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
 		warning_msg = "file_to_sent"
 		for client in self.server.client_connected_for_file_sending:
 			client.send(warning_msg.encode())

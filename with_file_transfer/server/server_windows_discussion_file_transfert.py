@@ -1,17 +1,19 @@
 import sys
 from server_file_transfert import Server, ReceiveMessages, SendMessages, HandleFileSending, Broadcast, CloseMainConnection
-from PyQt4 import QtGui
+#from PyQt4 import QtGui
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
-
-class ServerWindow(QtGui.QWidget):
+class ServerWindow(QWidget):
 
 	def __init__(self, my_ip, pseudo):
 		super(ServerWindow, self).__init__()
 		#self.title = QtGui.QLabel('Title')
-		self.received_message_window = QtGui.QTextEdit()
-		self.send_message_windows = QtGui.QLineEdit()
-		self.send_message_button = QtGui.QPushButton("Envoyer")
-		self.setWindowIcon(QtGui.QIcon('logo_messenger.png'))
+		self.received_message_window = QTextEdit()
+		self.send_message_windows = QLineEdit()
+		self.send_message_button = QPushButton("Envoyer")
+		self.choose_file_button = QPushButton("Choose file")
+		self.setWindowIcon(QIcon('logo_messenger.png'))
 
 		self.server = Server(pseudo, my_ip, self.received_message_window)
 		self.close_main_connection = CloseMainConnection(self.server)
@@ -28,17 +30,19 @@ class ServerWindow(QtGui.QWidget):
 
 	def initUI(self):
 
-		grid = QtGui.QGridLayout()
+		grid = QGridLayout()
 		grid.setSpacing(10)
 
 		grid.addWidget(self.received_message_window, 1,0, 4, 2)
-		grid.addWidget(self.send_message_windows,5,0)
-		grid.addWidget(self.send_message_button,5,1)
+		grid.addWidget(self.choose_file_button,5,0)
+		grid.addWidget(self.send_message_windows,5,1)
+		grid.addWidget(self.send_message_button,5,2)
 
 		self.setLayout(grid)
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
 		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
+		self.choose_file_button.clicked.connect(self.get_file_name)
 
 		self.setGeometry(300, 300, 350, 300)
 		self.setWindowTitle('Ptit Chat - Server')
@@ -61,12 +65,18 @@ class ServerWindow(QtGui.QWidget):
 				self.received_message_window.append(message_to_send)
 		self.send_message_windows.clear()
 
+	def get_file_name(self):
+		dlg = QFileDialog()
+		if dlg.exec_():
+			filenames = dlg.selectedFiles()
+			for file in filenames:
+				print(file)
 def main():
 	#my_ip = input("Quel est ton ip?")
 	#pseudo = input('Choisis un pseudo : ')
 	my_ip = "127.0.0.1"
 	pseudo = "ryan"
-	app = QtGui.QApplication(sys.argv)
+	app = QApplication(sys.argv)
 	server_windows = ServerWindow(my_ip, pseudo)
 	sys.exit(app.exec_())
 
