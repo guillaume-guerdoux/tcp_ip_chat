@@ -13,8 +13,8 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44462
-		self.file_port = 44463
+		self.port = 44466
+		self.file_port = 44467
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
@@ -121,7 +121,7 @@ class HandleFileSending():
 	def handle_file_sending(self, filename):
 		# TODO : Be able to select a file in pyqt
 		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
-		warning_msg = "file_to_sent"
+		warning_msg = "file_to_be_sent"
 		for client in self.server.client_connected_for_file_sending:
 			client.send(warning_msg.encode())
 			file_openend_message = client.recv(1024) #Wait for opened file on client file
