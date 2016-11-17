@@ -36,6 +36,7 @@ class Server(QThread):
 
 		while self.running == True:
 			# Get all new connections asked by client
+			# TODO : add an exception for ValueError ! (when server is closing conneciton ; pb)
 			try:
 				ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
 				for connection in ask_connections:
@@ -113,12 +114,12 @@ class SendMessages():
 		print("send message thread closed")
 		self.close_main_connection.kill()
 
-class HandleFileSending():
+class SendFile():
 	def __init__(self, server, received_message_window):
 		self.server = server
 		self.received_message_window = received_message_window 
 
-	def handle_file_sending(self, filename):
+	def send_file(self, filename):
 		# TODO : Be able to select a file in pyqt
 		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
 		warning_msg = "file_to_be_sent"
@@ -165,6 +166,7 @@ class CloseMainConnection():
 			client.close()
 		print("connection with all clients closed file")
 		self.server.main_connection.close()
+		print("main connection closed")
 		self.server.main_connection_file.close()
 		print("main connection file closed")
 

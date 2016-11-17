@@ -1,5 +1,5 @@
 import sys
-from server_file_transfert import Server, ReceiveMessages, SendMessages, HandleFileSending, Broadcast, CloseMainConnection
+from server_file_transfert import Server, ReceiveMessages, SendMessages, SendFile, Broadcast, CloseMainConnection
 #from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -18,7 +18,7 @@ class ServerWindow(QWidget):
 		self.server = Server(pseudo, my_ip, self.received_message_window)
 		self.close_main_connection = CloseMainConnection(self.server)
 		self.send_messages_to_clients = SendMessages(self.server, self.close_main_connection)
-		self.handle_file_sending = HandleFileSending(self.server, self.received_message_window)
+		self.handle_file_sending = SendFile(self.server, self.received_message_window)
 		self.broadcast = Broadcast(self.send_messages_to_clients)
 		self.receive_client_messages = ReceiveMessages(self.server, self.broadcast, self.received_message_window)
 
@@ -42,7 +42,7 @@ class ServerWindow(QWidget):
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
 		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
-		self.choose_file_button.clicked.connect(self.send_file)
+		self.choose_file_button.clicked.connect(self.choose_file_to_sent)
 
 		self.setGeometry(300, 300, 350, 300)
 		self.setWindowTitle('Ptit Chat - Server')
@@ -63,17 +63,17 @@ class ServerWindow(QWidget):
 				self.received_message_window.append(message_to_send)
 		self.send_message_windows.clear()
 
-	def send_file(self):
+	def choose_file_to_sent(self):
 		dlg = QFileDialog()
 		if dlg.exec_():
 			filenames = dlg.selectedFiles()
 			for file in filenames:
-				self.handle_file_sending.handle_file_sending(file)
+				self.handle_file_sending.send_file(file)
 def main():
-	my_ip = input("Quel est ton ip?")
-	pseudo = input('Choisis un pseudo : ')
-	#my_ip = "127.0.0.1"
-	#pseudo = "ryan"
+	#my_ip = input("Quel est ton ip?")
+	#pseudo = input('Choisis un pseudo : ')
+	my_ip = "127.0.0.1"
+	pseudo = "ryan"
 	app = QApplication(sys.argv)
 	server_windows = ServerWindow(my_ip, pseudo)
 	sys.exit(app.exec_())
