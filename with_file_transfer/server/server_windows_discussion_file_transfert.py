@@ -42,7 +42,7 @@ class ServerWindow(QWidget):
 
 		self.send_message_button.clicked.connect(self.send_text_messages)
 		self.send_message_windows.returnPressed.connect(self.send_message_button.click)
-		self.choose_file_button.clicked.connect(self.get_file_name)
+		self.choose_file_button.clicked.connect(self.send_file)
 
 		self.setGeometry(300, 300, 350, 300)
 		self.setWindowTitle('Ptit Chat - Server')
@@ -63,7 +63,7 @@ class ServerWindow(QWidget):
 				self.received_message_window.append(message_to_send)
 		self.send_message_windows.clear()
 
-	def get_file_name(self):
+	def send_file(self):
 		dlg = QFileDialog()
 		if dlg.exec_():
 			filenames = dlg.selectedFiles()
