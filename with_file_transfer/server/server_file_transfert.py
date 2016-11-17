@@ -13,8 +13,8 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44466
-		self.file_port = 44467
+		self.port = 44450
+		self.file_port = 44451
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []

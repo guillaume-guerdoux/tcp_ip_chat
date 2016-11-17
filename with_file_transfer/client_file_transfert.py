@@ -2,6 +2,7 @@ import socket
 import threading
 import select
 
+from datetime import datetime
 # TODO : Send files
 # TODO Qt for graphic interface
 # TODO : login password to access chat
@@ -15,8 +16,8 @@ class Client():
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44466
-		self.file_port = 44467
+		self.port = 44450
+		self.file_port = 44451
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
@@ -100,7 +101,7 @@ class ReceiveServerFiles(threading.Thread):
 					data = self.client.file_connection_with_server.recv(1024).decode()
 					if data:
 						if data =="file_to_be_sent":
-							with open("new_file", 'wb') as f:  #create the file
+							with open("new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S"), 'wb') as f:  #create the file
 								print("we write")
 								msg_send = "file_opened"
 								self.client.file_connection_with_server.send(msg_send.encode())
