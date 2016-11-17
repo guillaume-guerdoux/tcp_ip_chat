@@ -55,10 +55,10 @@ class ClientWindow(QtGui.QWidget):
 			self.send_message_windows.clear()
 
 def main():
-	#my_ip = input("Quelle IP voulez-vous contacter ? ")
-	#pseudo = input('Choisis un pseudo : ')
-	my_ip = "127.0.0.1"
-	pseudo = "ryan"
+	my_ip = input("Quelle IP voulez-vous contacter ? ")
+	pseudo = input('Choisis un pseudo : ')
+	#my_ip = "127.0.0.1"
+	#pseudo = "ryan"
 	app = QtGui.QApplication(sys.argv)
 	client_windows = ClientWindow(my_ip, pseudo)
 	sys.exit(app.exec_())

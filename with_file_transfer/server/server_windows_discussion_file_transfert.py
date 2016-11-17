@@ -70,10 +70,10 @@ class ServerWindow(QWidget):
 			for file in filenames:
 				self.handle_file_sending.handle_file_sending(file)
 def main():
-	#my_ip = input("Quel est ton ip?")
-	#pseudo = input('Choisis un pseudo : ')
-	my_ip = "127.0.0.1"
-	pseudo = "ryan"
+	my_ip = input("Quel est ton ip?")
+	pseudo = input('Choisis un pseudo : ')
+	#my_ip = "127.0.0.1"
+	#pseudo = "ryan"
 	app = QApplication(sys.argv)
 	server_windows = ServerWindow(my_ip, pseudo)
 	sys.exit(app.exec_())
