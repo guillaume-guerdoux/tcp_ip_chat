@@ -1,5 +1,6 @@
 import sys
-from server_file_transfert import Server, ReceiveMessages,ReceiveClientFiles, SendMessages, SendFile, Broadcast, CloseMainConnection
+from server_file_transfert import (Server, ReceiveMessages,ReceiveClientFiles, 
+SendMessages, SendFile, Broadcast, BroadcastFile, CloseMainConnection)
 #from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -20,8 +21,9 @@ class ServerWindow(QWidget):
 		self.send_messages_to_clients = SendMessages(self.server, self.close_main_connection)
 		self.handle_file_sending = SendFile(self.server, self.received_message_window)
 		self.broadcast = Broadcast(self.send_messages_to_clients)
+		self.broadcast_file = BroadcastFile(self.handle_file_sending)
 		self.receive_client_messages = ReceiveMessages(self.server, self.broadcast, self.received_message_window)
-		self.receive_client_files = ReceiveClientFiles(self.server, self.received_message_window)
+		self.receive_client_files = ReceiveClientFiles(self.server, self.broadcast_file, self.received_message_window)
 
 		self.close_main_connection.receive_client_messages = self.receive_client_messages
 		self.close_main_connection.receive_client_files = self.receive_client_files
@@ -73,10 +75,10 @@ class ServerWindow(QWidget):
 			for file in filenames:
 				self.handle_file_sending.send_file(file)
 def main():
-	my_ip = input("Quel est ton ip?")
-	pseudo = input('Choisis un pseudo : ')
-	#my_ip = "127.0.0.1"
-	#pseudo = "ryan"
+	#my_ip = input("Quel est ton ip?")
+	#pseudo = input('Choisis un pseudo : ')
+	my_ip = "127.0.0.1"
+	pseudo = "ryan"
 	app = QApplication(sys.argv)
 	server_windows = ServerWindow(my_ip, pseudo)
 	sys.exit(app.exec_())

@@ -15,8 +15,8 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44464
-		self.file_port = 44465
+		self.port = 44466
+		self.file_port = 44467
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
@@ -104,10 +104,11 @@ class ReceiveMessages(QThread):
 Thread which enabled server to receive files from client '''
 
 class ReceiveClientFiles(threading.Thread):
-	def __init__(self, server, received_message_window):
+	def __init__(self, server, broadcast, received_message_window):
 		threading.Thread.__init__(self)
 		self.server = server
 		#self.connection_with_server = self.client.connection_with_server
+		self.broadcast = broadcast
 		self.running = True
 		self.received_message_window = received_message_window 
 
@@ -127,7 +128,8 @@ class ReceiveClientFiles(threading.Thread):
 					data = client.recv(1024).decode()
 					if data:
 						if data =="file_to_be_sent":
-							with open("new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S"), 'wb') as f:  #create the file
+							new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+							with open(new_filename, 'wb') as f:  #create the file
 								print("we write")
 								msg_send = "file_opened"
 								client.send(msg_send.encode())
@@ -142,6 +144,7 @@ class ReceiveClientFiles(threading.Thread):
 										receiving = False
 									f.close()
 									self.received_message_window.append("Fichier bien reçu")
+									self.broadcast.broadcast_file(new_filename, client)
 
 ''' Send message Thread 
 
@@ -159,6 +162,8 @@ class SendMessages():
 	def kill(self):
 		print("send message thread closed")
 		self.close_main_connection.kill()
+
+# TODO : Merge send_file with send_file_to_client_list
 
 class SendFile():
 	def __init__(self, server, received_message_window):
@@ -185,6 +190,24 @@ class SendFile():
 				False
 				self.received_message_window.append("Fichier envoyé")
 
+	def send_file_to_client_list(self, filename, list_client):
+		warning_msg = "file_to_be_sent"
+		for client in list_client:
+			client.send(warning_msg.encode())
+			file_openend_message = client.recv(1024) #Wait for opened file on client file
+			file_openend_message = file_openend_message.decode()
+			if file_openend_message == "file_opened":
+				sending_file_message = "file_is_sending" #Send the file 
+				client.send(sending_file_message.encode())
+				f = open(filename,'rb') #Open the file in reading mode
+				l = f.read(1024)
+				while (l):
+					client.send(l)
+					l = f.read(1024)
+				f.close() #close the file 
+				False
+				self.received_message_window.append("Fichier envoyé")
+
 class Broadcast():
 	def __init__(self, send_messages_to_clients):
 		self.send_messages_to_clients = send_messages_to_clients
@@ -195,6 +218,14 @@ class Broadcast():
 		list_clients_who_send_message.remove(client)
 		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message) 		
 
+class BroadcastFile():
+	def __init__(self, send_files_to_clients):
+		self.send_files_to_clients = send_files_to_clients
+
+	def broadcast_file(self, filename, client):
+		list_clients_to_send_file = list(self.send_files_to_clients.server.client_connected_for_file_sending)
+		list_clients_to_send_file.remove(client)
+		self.send_files_to_clients.send_file_to_client_list(filename, list_clients_to_send_file)
 
 class CloseMainConnection():
 	def __init__(self, server):
