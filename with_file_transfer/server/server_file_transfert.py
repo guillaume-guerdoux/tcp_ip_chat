@@ -199,12 +199,15 @@ class CloseMainConnection():
 	def __init__(self, server):
 		self.server = server
 		self.receive_client_messages = None
+		self.receive_client_files = None
 
 	def kill(self):
 		self.server.running = False
 		print("Server closed")
 		self.receive_client_messages.running = False
 		print("receive client message thread closed")
+		self.receive_client_files.running = False
+		print("receive client files thread closed")
 		for client in self.server.clients_connected:
 			client.close()
 		print("connection with all clients closed")

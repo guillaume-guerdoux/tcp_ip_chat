@@ -24,6 +24,7 @@ class ServerWindow(QWidget):
 		self.receive_client_files = ReceiveClientFiles(self.server, self.received_message_window)
 
 		self.close_main_connection.receive_client_messages = self.receive_client_messages
+		self.close_main_connection.receive_client_files = self.receive_client_files
 
 		self.server.start()
 		self.receive_client_messages.start()

@@ -18,13 +18,9 @@ class TestServerInstantiateClassMethods(unittest.TestCase):
         self.assertEqual(server.client_connected_for_file_sending, [])
         self.assertEqual(server.clients_connected, [])
 
-    if __name__ == '__main__':
-        unittest.main()
-
-
 class TestClientInstantiateClassMethods(unittest.TestCase):
 
-    def test_create_server(self):
+    def test_create_client(self):
         client = Client("test_pseudo", "127.0.0.1",[])
         self.assertEqual(client.pseudo,"test_pseudo")
         self.assertEqual(client.host, "127.0.0.1")
@@ -32,6 +28,7 @@ class TestClientInstantiateClassMethods(unittest.TestCase):
         self.assertEqual(client.file_port, 44449)
         self.assertEqual(client.received_message_window, [])
 
-    if __name__ == '__main__':
-        unittest.main()
+   
 
+ if __name__ == '__main__':
+    unittest.main()
