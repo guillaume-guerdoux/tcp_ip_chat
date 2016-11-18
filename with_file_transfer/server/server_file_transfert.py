@@ -2,6 +2,8 @@ import socket
 import threading
 import select
 
+from datetime import datetime
+
 from PyQt4.QtCore import QThread
 ''' Server Thread 
 
@@ -13,8 +15,8 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44450
-		self.file_port = 44451
+		self.port = 44464
+		self.file_port = 44465
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
@@ -96,7 +98,51 @@ class ReceiveMessages(QThread):
 		self.server.clients_connected.remove(client)
 		client.close()
 		print("connection with client closed")
-		
+
+''' Receive File thread 
+
+Thread which enabled server to receive files from client '''
+
+class ReceiveClientFiles(threading.Thread):
+	def __init__(self, server, received_message_window):
+		threading.Thread.__init__(self)
+		self.server = server
+		#self.connection_with_server = self.client.connection_with_server
+		self.running = True
+		self.received_message_window = received_message_window 
+
+	def run(self):
+		while self.running == True:
+			file_clients_to_read = []
+			try:
+				# Clients to read is a list of client who has sent a message
+				file_clients_to_read, wlist, xlist = select.select(self.server.client_connected_for_file_sending,
+					self.server.client_connected_for_file_sending, [],0.05)
+			except Exception:
+				pass
+			else:
+				# Print all messages received
+				for client in file_clients_to_read:
+					# Handle sockets
+					data = client.recv(1024).decode()
+					if data:
+						if data =="file_to_be_sent":
+							with open("new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S"), 'wb') as f:  #create the file
+								print("we write")
+								msg_send = "file_opened"
+								client.send(msg_send.encode())
+								file_reception_message = client.recv(1024).decode()
+								if file_reception_message == "file_is_sending": #file reception started
+									receiving = True
+									while receiving == True:
+										file_data = client.recv(1024)
+										if not file_data:
+											break
+										f.write(file_data)
+										receiving = False
+									f.close()
+									self.received_message_window.append("Fichier bien reçu")
+
 ''' Send message Thread 
 
 Thread which is enabled server to send messages to clients '''

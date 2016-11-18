@@ -1,5 +1,5 @@
 import sys
-from server_file_transfert import Server, ReceiveMessages, SendMessages, SendFile, Broadcast, CloseMainConnection
+from server_file_transfert import Server, ReceiveMessages,ReceiveClientFiles, SendMessages, SendFile, Broadcast, CloseMainConnection
 #from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -21,11 +21,13 @@ class ServerWindow(QWidget):
 		self.handle_file_sending = SendFile(self.server, self.received_message_window)
 		self.broadcast = Broadcast(self.send_messages_to_clients)
 		self.receive_client_messages = ReceiveMessages(self.server, self.broadcast, self.received_message_window)
+		self.receive_client_files = ReceiveClientFiles(self.server, self.received_message_window)
 
 		self.close_main_connection.receive_client_messages = self.receive_client_messages
 
 		self.server.start()
 		self.receive_client_messages.start()
+		self.receive_client_files.start()
 		self.initUI()
 
 	def initUI(self):

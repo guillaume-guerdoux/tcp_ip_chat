@@ -2,11 +2,15 @@ import socket
 import threading
 import select
 
+from PyQt4.QtCore import QThread
+
 from datetime import datetime
 # TODO : Send files
 # TODO Qt for graphic interface
 # TODO : login password to access chat
 # TODO : login before message
+
+# TODO : Pass send message to a class in client_file_transfert.py
 
 ''' Client Class 
 
@@ -16,8 +20,8 @@ class Client():
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44450
-		self.file_port = 44451
+		self.port = 44464
+		self.file_port = 44465
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
@@ -49,9 +53,9 @@ class Client():
 
 Thread which is enabled client to receive messages from server '''
 
-class ReceiveServerMessages(threading.Thread):
+class ReceiveServerMessages(QThread):
 	def __init__(self, client, received_message_window):
-		threading.Thread.__init__(self)
+		QThread.__init__(self)
 		self.client = client
 		#self.connection_with_server = self.client.connection_with_server
 		self.running = True
@@ -80,11 +84,11 @@ class ReceiveServerMessages(threading.Thread):
 
 ''' Receive File thread 
 
-Thread which is enabled client to receive files from server '''
+Thread which enabled client to receive files from server '''
 
-class ReceiveServerFiles(threading.Thread):
+class ReceiveServerFiles(QThread):
 	def __init__(self, client, received_message_window):
-		threading.Thread.__init__(self)
+		QThread.__init__(self)
 		self.client = client
 		#self.connection_with_server = self.client.connection_with_server
 		self.running = True
@@ -121,6 +125,33 @@ class ReceiveServerFiles(threading.Thread):
 			except OSError:
 				self.running = False
 				self.client.kill()
+''' Send File to Server
+
+Thread which enabled client to send files to server '''
+
+class SendServerFiles():
+	def __init__(self, client, received_message_window):
+		self.client = client
+		self.received_message_window = received_message_window 
+
+	def send_file(self, filename):
+		# TODO : Be able to select a file in pyqt
+		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
+		warning_msg = "file_to_be_sent"
+		self.client.file_connection_with_server.send(warning_msg.encode())
+		file_openend_message = self.client.file_connection_with_server.recv(1024) #Wait for opened file on client file
+		file_openend_message = file_openend_message.decode()
+		if file_openend_message == "file_opened":
+			sending_file_message = "file_is_sending" #Send the file 
+			self.client.file_connection_with_server.send(sending_file_message.encode())
+			f = open(filename,'rb') #Open the file in reading mode
+			l = f.read(1024)
+			while (l):
+				self.client.file_connection_with_server.send(l)
+				l = f.read(1024)
+			f.close() #close the file 
+			False
+			self.received_message_window.append("Fichier envoyé")
 
 
 if __name__ == "__main__":
