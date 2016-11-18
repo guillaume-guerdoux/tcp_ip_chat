@@ -195,6 +195,7 @@ class Broadcast():
 		list_clients_who_send_message.remove(client)
 		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message) 		
 
+
 class CloseMainConnection():
 	def __init__(self, server):
 		self.server = server
