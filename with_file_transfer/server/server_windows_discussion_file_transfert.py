@@ -74,6 +74,14 @@ class ServerWindow(QWidget):
 			filenames = dlg.selectedFiles()
 			for file in filenames:
 				self.handle_file_sending.send_file(file)
+
+	def closeEvent(self, event):
+		ended_message = "ENDED_SIGNAL_MESSAGE"
+		self.send_messages_to_clients.send_message_to_list_of_client(ended_message,
+			self.send_messages_to_clients.server.clients_connected)
+		self.send_messages_to_clients.kill()
+		event.accept() # let the window close
+
 def main():
 	#my_ip = input("Quel est ton ip?")
 	#pseudo = input('Choisis un pseudo : ')

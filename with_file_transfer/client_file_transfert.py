@@ -20,8 +20,8 @@ class Client():
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44444
-		self.file_port = 44445
+		self.port = 44448
+		self.file_port = 44449
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))

@@ -70,7 +70,10 @@ class ClientWindow(QWidget):
 	# Handle closure of window (when client clicks on red cross)
 	def closeEvent(self, event):
 		ended_message = "ENDED_SIGNAL_MESSAGE"
-		self.client.connection_with_server.send(ended_message.encode())
+		try:
+			self.client.connection_with_server.send(ended_message.encode())
+		except OSError:
+			pass
 		self.client.kill()
 		event.accept() # let the window close
 
