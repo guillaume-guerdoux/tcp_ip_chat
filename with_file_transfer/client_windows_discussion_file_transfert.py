@@ -52,7 +52,7 @@ class ClientWindow(QWidget):
 	def send_text_messages(self):
 		message_to_send = self.send_message_windows.text()
 		if message_to_send:
-			if message_to_send=="fin":
+			if message_to_send=="ENDED_SIGNAL_MESSAGE":
 				self.client.connection_with_server.send(message_to_send.encode())
 				self.client.kill()
 			else:
@@ -66,6 +66,13 @@ class ClientWindow(QWidget):
 			filenames = dlg.selectedFiles()
 			for file in filenames:
 				self.handle_file_sending.send_file(file)
+
+	# Handle closure of window (when client clicks on red cross)
+	def closeEvent(self, event):
+		ended_message = "ENDED_SIGNAL_MESSAGE"
+		self.client.connection_with_server.send(ended_message.encode())
+		self.client.kill()
+		event.accept() # let the window close
 
 def main():
 	#my_ip = input("Quelle IP voulez-vous contacter ? ")

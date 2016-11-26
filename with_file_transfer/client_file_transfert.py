@@ -20,8 +20,8 @@ class Client():
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44466
-		self.file_port = 44467
+		self.port = 44444
+		self.file_port = 44445
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
@@ -71,11 +71,12 @@ class ReceiveServerMessages(QThread):
 					# Handle sockets
 					data = self.client.connection_with_server.recv(1024).decode()
 					if data:
-						self.received_message_window.append(data)
-						print(data)
-						if data =="fin":
+						if data == "ENDED_SIGNAL_MESSAGE":
+							self.received_message_window.append("La connection a été fermée")
 							self.running = False
 							self.client.kill()
+						else:
+							self.received_message_window.append(data)
 					else:
 						break
 			except OSError:

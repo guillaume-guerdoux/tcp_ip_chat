@@ -15,8 +15,8 @@ class Server(QThread):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44466
-		self.file_port = 44467
+		self.port = 44444
+		self.file_port = 44445
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
@@ -88,7 +88,7 @@ class ReceiveMessages(QThread):
 					msg_received = msg_received.decode()
 					self.received_message_window.append(msg_received)
 					print(msg_received)
-					if msg_received == "fin":
+					if msg_received == "ENDED_SIGNAL_MESSAGE":
 						self.kill(client)
 					else:
 						self.broadcast.broadcast(msg_received, client)

@@ -56,7 +56,7 @@ class ServerWindow(QWidget):
 	def send_text_messages(self):
 		message_to_send = self.send_message_windows.text()
 		if message_to_send:
-			if message_to_send=="fin":
+			if message_to_send=="ENDED_SIGNAL_MESSAGE":
 				self.send_messages_to_clients.send_message_to_list_of_client(message_to_send,
 					self.send_messages_to_clients.server.clients_connected)
 				self.send_messages_to_clients.kill()
