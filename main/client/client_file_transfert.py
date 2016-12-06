@@ -16,12 +16,12 @@ from datetime import datetime
 
 Create the object client and connect to server '''
 class Client():
-	def __init__(self, pseudo, host, received_message_window):
+	def __init__(self, pseudo, host, port, received_message_window):
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44448
-		self.file_port = 44449
+		self.port = int(port)
+		self.file_port = int(port)+1
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))

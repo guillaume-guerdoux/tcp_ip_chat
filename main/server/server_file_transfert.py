@@ -10,13 +10,13 @@ from PyQt4.QtCore import QThread
 Thread which is enabled when server is created. Listen to new client connection '''
 
 class Server(QThread):
-	def __init__(self, pseudo, host, received_message_window):
+	def __init__(self, pseudo, host, port, received_message_window):
 		QThread.__init__(self)
 		self.pseudo = pseudo
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = 44448
-		self.file_port = 44449
+		self.port = int(port)
+		self.file_port = int(port) + 1
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []

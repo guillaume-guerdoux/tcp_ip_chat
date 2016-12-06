@@ -7,7 +7,7 @@ from PyQt4.QtGui import *
 
 class ServerWindow(QWidget):
 
-	def __init__(self, my_ip, pseudo):
+	def __init__(self, my_ip, pseudo, port):
 		super(ServerWindow, self).__init__()
 		#self.title = QtGui.QLabel('Title')
 		self.received_message_window = QTextEdit()
@@ -16,7 +16,7 @@ class ServerWindow(QWidget):
 		self.choose_file_button = QPushButton("Choose file")
 		self.setWindowIcon(QIcon('logo_messenger.png'))
 
-		self.server = Server(pseudo, my_ip, self.received_message_window)
+		self.server = Server(pseudo, my_ip, port, self.received_message_window)
 		self.close_main_connection = CloseMainConnection(self.server)
 		self.send_messages_to_clients = SendMessages(self.server, self.close_main_connection)
 		self.handle_file_sending = SendFile(self.server, self.received_message_window)
@@ -83,12 +83,11 @@ class ServerWindow(QWidget):
 		event.accept() # let the window close
 
 def main():
-	#my_ip = input("Quel est ton ip?")
-	#pseudo = input('Choisis un pseudo : ')
-	my_ip = "127.0.0.1"
-	pseudo = "ryan"
+	my_ip = input("Quel est ton ip?")
+	pseudo = input('Choisissez un pseudo : ')
+	port = input('Port de connection : ')
 	app = QApplication(sys.argv)
-	server_windows = ServerWindow(my_ip, pseudo)
+	server_windows = ServerWindow(my_ip, pseudo, port)
 	sys.exit(app.exec_())
 
 
