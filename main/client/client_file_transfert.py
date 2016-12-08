@@ -8,11 +8,9 @@ from PyQt4.QtCore import QThread
 
 from datetime import datetime
 
-# TODO : Pass send message to a class in client_file_transfert.py
-
-''' Client Class
-
-Create the object client and connect to server '''
+''' ------- Client
+		Input : pseudo / ip / port / windows where received messages are displayed
+		Function : Connect to server ------- '''
 class Client():
 	def __init__(self, pseudo, host, port, received_message_window):
 		self.pseudo = pseudo
@@ -58,9 +56,12 @@ class Client():
 
 
 
-''' Receive message thread
-
-Thread which is enabled client to receive messages from server '''
+''' ------- Receive Message thread
+		Input : client / windows where received messages are displayed
+		Function : 
+		- Listen if new messages are received from server
+		- Print received messages in the dedicated window in pyqt interface
+		- If it's an ended message : close connection ------- '''
 
 class ReceiveServerMessages(QThread):
 	def __init__(self, client, received_message_window):
@@ -90,9 +91,13 @@ class ReceiveServerMessages(QThread):
 				self.running = False
 				self.client.kill()
 
-''' Receive File thread
-
-Thread which enabled client to receive files from server '''
+''' ------- Receive File thread
+		Input : client / windows where received messages are displayed
+		Function : 
+		- Listen if new files are received from server
+		- Open a new file named by now's datetime
+		- Write received data in opened file
+		- Close file and send to server confirmation message ------- '''
 
 class ReceiveServerFiles(QThread):
 	def __init__(self, client, received_message_window):
@@ -129,9 +134,11 @@ class ReceiveServerFiles(QThread):
 			except OSError:
 				self.running = False
 				self.client.kill()
-''' Send File to Server
 
-Thread which enabled client to send files to server '''
+''' ------- Send File 
+		Input : client / windows where received messages are displayed
+		Function : 
+		- Send file server ------- '''
 
 class SendServerFiles():
 	def __init__(self, client, received_message_window):
@@ -139,21 +146,19 @@ class SendServerFiles():
 		self.received_message_window = received_message_window
 
 	def send_file(self, filename):
-		# TODO : Be able to select a file in pyqt
-		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
 		warning_msg = "file_to_be_sent"
-		self.client.file_connection_with_server.send(warning_msg.encode())
-		file_openend_message = self.client.file_connection_with_server.recv(1024) #Wait for opened file on client file
+		self.client.file_connection_with_server.send(warning_msg.encode())	# Send message to tell server a file is to be sent
+		file_openend_message = self.client.file_connection_with_server.recv(1024) # Wait for server to open a new file
 		file_openend_message = file_openend_message.decode()
 		if file_openend_message == "file_opened":
-			sending_file_message = "file_is_sending" #Send the file
+			sending_file_message = "file_is_sending"
 			self.client.file_connection_with_server.send(sending_file_message.encode())
 			f = open(filename,'rb') #Open the file in reading mode
 			l = f.read(1024)
 			while (l):
-				self.client.file_connection_with_server.send(l)
+				self.client.file_connection_with_server.send(l)	 	#Send file data
 				l = f.read(1024)
-			f.close() #close the file
+			f.close() # Close the file
 			False
 			self.received_message_window.append("Fichier envoyé")
 

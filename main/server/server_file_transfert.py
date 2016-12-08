@@ -119,9 +119,13 @@ class ReceiveMessages(QThread):
 
 
 
-''' Receive File thread
-
-Thread which enabled server to receive files from client '''
+''' ------- Receive File thread
+		Input : server / function to broadcast message to other clients / windows where received messages are displayed
+		Function : 
+		- Listen if new files are received by server
+		- Open a new file named by now's datetime
+		- Write received data in opened file
+		- Close file and send to client confirmation message ------- '''
 class ReceiveClientFiles(threading.Thread):
 
 	def __init__(self, server, broadcast, received_message_window):
@@ -141,32 +145,30 @@ class ReceiveClientFiles(threading.Thread):
 			except Exception:
 				pass
 			else:
-				# Print all messages received
-				for client in file_clients_to_read:
-					# Handle sockets
+				for client in file_clients_to_read:		# Check if it's the coding message to send file
 					data = client.recv(1024).decode()
-					if data:
-						if data =="file_to_be_sent":
-							new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-							with open(new_filename, 'wb') as f:  #create the file							
-								msg_send = "file_opened"
-								client.send(msg_send.encode())
-								file_reception_message = client.recv(1024).decode()
-								if file_reception_message == "file_is_sending": #file reception started
-									receiving = True
-									while receiving == True:
-										file_data = client.recv(1024)
-										if not file_data:
-											break
-										f.write(file_data)
-										receiving = False
-									f.close()
-									self.received_message_window.append("Fichier bien reçu")
-									self.broadcast.broadcast_file(new_filename, client)
+					if data and data =="file_to_be_sent":
+						new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+						with open(new_filename, 'wb') as f:  #create the file							
+							msg_send = "file_opened"
+							client.send(msg_send.encode())	# Tell client server is writing in file
+							file_reception_message = client.recv(1024).decode()
+							if file_reception_message == "file_is_sending": # Test if client is going to send file
+								receiving = True
+								while receiving == True:
+									file_data = client.recv(1024)
+									if not file_data:
+										break
+									f.write(file_data)		# Write in opnened file
+									receiving = False
+								f.close()
+								self.received_message_window.append("Fichier bien reçu")
+								self.broadcast.broadcast_file(new_filename, client)
 
-''' Send message Thread
-
-Thread which is enabled server to send messages to clients '''
+''' ------- Send Message 
+		Input : server
+		Function : 
+		- Send text message to a client list ------- '''
 
 class SendMessages():
 
@@ -183,7 +185,11 @@ class SendMessages():
 	def kill(self):
 		self.close_main_connection.kill()
 
-# TODO : Merge send_file with send_file_to_client_list
+''' ------- Send File 
+		Input : server / windows where received messages are displayed
+		Function : 
+		- Send file all clients
+		- Send file to client list ------- '''
 
 class SendFile():
 	def __init__(self, server, received_message_window):
@@ -191,22 +197,20 @@ class SendFile():
 		self.received_message_window = received_message_window
 
 	def send_file(self, filename):
-		# TODO : Be able to select a file in pyqt
-		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
-		warning_msg = "file_to_send"
+		warning_msg = "file_to_send"	
 		for client in self.server.client_connected_for_file_sending:
-			client.send(warning_msg.encode())
-			file_openend_message = client.recv(1024) #Wait for opened file on client file
+			client.send(warning_msg.encode())		# Send message to tell client a file is to be sent
+			file_openend_message = client.recv(1024) # Wait for client to open a new file
 			file_openend_message = file_openend_message.decode()
 			if file_openend_message == "file_opened":
-				sending_file_message = "file_is_sending" #Send the file
+				sending_file_message = "file_is_sending" 
 				client.send(sending_file_message.encode())
 				f = open(filename,'rb') #Open the file in reading mode
 				l = f.read(1024)
 				while (l):
 					client.send(l)
-					l = f.read(1024)
-				f.close() #close the file
+					l = f.read(1024)	# Send file data
+				f.close() 				# Close file
 				False
 				self.received_message_window.append("Fichier envoyé")
 
@@ -214,23 +218,27 @@ class SendFile():
 		warning_msg = "file_to_be_sent"
 		for client in list_client:
 			client.send(warning_msg.encode())
-			file_openend_message = client.recv(1024) #Wait for opened file on client file
+			file_openend_message = client.recv(1024)
 			file_openend_message = file_openend_message.decode()
 			if file_openend_message == "file_opened":
-				sending_file_message = "file_is_sending" #Send the file
+				sending_file_message = "file_is_sending" 
 				client.send(sending_file_message.encode())
-				f = open(filename,'rb') #Open the file in reading mode
+				f = open(filename,'rb') 
 				l = f.read(1024)
 				while (l):
 					client.send(l)
 					l = f.read(1024)
-				f.close() #close the file
+				f.close()
 				False
 				self.received_message_window.append("Fichier envoyé")
 
+''' ------- Broadcast message to all clients
+		Input : send message fuction
+		Function : 
+		- Function called when server receive a message from one client
+		- Brodacast this message to other clients  ------- '''
+
 class Broadcast():
-#The server is responsible for broadcasting a message when several clients are in the discussion.
-#Receive the message from one client and broadcast it to the others.
 
 	def __init__(self, send_messages_to_clients):
 		self.send_messages_to_clients = send_messages_to_clients
@@ -241,9 +249,13 @@ class Broadcast():
 		list_clients_who_send_message.remove(client) #remove the sender
 		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message)
 
+''' ------- Broadcast file to all clients
+		Input : send file fuction
+		Function : 
+		- Function called when server receive a file from one client
+		- Brodacast this message to other clients  ------- '''
+
 class BroadcastFile():
-#The server is responsible for broadcasting a file when several clients are in the discussion.
-#Receive the file from one client and broadcast it to the others.
 
 	def __init__(self, send_files_to_clients):
 		self.send_files_to_clients = send_files_to_clients
@@ -253,8 +265,13 @@ class BroadcastFile():
 		list_clients_to_send_file.remove(client) #remove the sender
 		self.send_files_to_clients.send_file_to_client_list(filename, list_clients_to_send_file)
 
+''' ------- Close connection and thread
+		Input : server
+		Function : 
+		- Close all connection with all clients 
+		- Close all threads  ------- '''
+
 class CloseMainConnection():
-#Close the connection when the server leaves.
 
 	def __init__(self, server):
 		self.server = server

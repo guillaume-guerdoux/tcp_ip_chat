@@ -95,8 +95,10 @@ class ClientWindow(QWidget):
 		event.accept() # let the window close
 
 def main():
-	my_ip = input("Quelle IP voulez-vous contacter ? ")
-	pseudo = input('Choisissez un pseudo : ')
+	my_ip = "127.0.0.1"
+	pseudo = "test"
+	#my_ip = input("Quelle IP voulez-vous contacter ? ")
+	#pseudo = input('Choisissez un pseudo : ')
 	port = input('Port de connection : ')
 	app = QApplication(sys.argv)
 	client_windows = ClientWindow(my_ip, pseudo, port)
