@@ -114,23 +114,21 @@ class ReceiveServerFiles(QThread):
 				for input_item in inputready:
 					# Handle sockets
 					data = self.client.file_connection_with_server.recv(1024).decode()
-					if data:
-						if data =="file_to_send":
-							new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-							with open(new_filename, 'wb') as f:  #create the file
-								msg_send = "file_opened"
-								self.client.file_connection_with_server.send(msg_send.encode())
-								file_reception_message = self.client.file_connection_with_server.recv(1024).decode()
-								if file_reception_message == "file_is_sending": #file reception started
-									receiving = True
-									while receiving == True:
-										file_data = self.client.file_connection_with_server.recv(1024)
-										if not file_data:
-											break
-										f.write(file_data)
-										receiving = False
-									f.close()
-									self.received_message_window.append("Fichier bien reçu")
+					if data and data =="file_to_send":
+						with open("received_file" + datetime.now().strftime("%d-%m-%Y-%H-%M-%S"), 'wb') as f:  #create the file
+							msg_send = "file_opened"
+							self.client.file_connection_with_server.send(msg_send.encode())
+							file_reception_message = self.client.file_connection_with_server.recv(1024).decode()
+							if file_reception_message == "file_is_sending": #file reception started
+								receiving = True
+								while receiving == True:
+									file_data = self.client.file_connection_with_server.recv(1024)
+									if not file_data:
+										break
+									f.write(file_data)
+									receiving = False
+								f.close()
+								self.received_message_window.append("Fichier bien reçu")
 					else:
 						break
 			except OSError:
@@ -158,7 +156,7 @@ class SendServerFiles():
 			f = open(filename,'rb') #Open the file in reading mode
 			l = f.read(1024)
 			while (l):
-				self.client.file_connection_with_server.send(l)
+				self.client.file_connection_with_server.send(l)	 	#Send file data
 				l = f.read(1024)
 			f.close() # Close the file
 			False

@@ -103,10 +103,10 @@ class ServerWindow(QWidget):
 		event.accept() # let the window close
 
 def main():
-	my_ip = "127.0.0.1"
-	pseudo = "ryan"
 	#my_ip = input("Quel est ton ip?")
 	#pseudo = input('Choisissez un pseudo : ')
+	my_ip = "127.0.0.1"
+	pseudo = "ryan"
 	port = input('Port de connection : ')
 	app = QApplication(sys.argv)
 	server_windows = ServerWindow(my_ip, pseudo, port)

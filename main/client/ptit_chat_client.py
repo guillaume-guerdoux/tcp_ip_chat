@@ -96,7 +96,7 @@ class ClientWindow(QWidget):
 
 def main():
 	my_ip = "127.0.0.1"
-	pseudo = "test"
+	pseudo = "ryan"
 	#my_ip = input("Quelle IP voulez-vous contacter ? ")
 	#pseudo = input('Choisissez un pseudo : ')
 	port = input('Port de connection : ')

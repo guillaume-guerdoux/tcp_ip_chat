@@ -147,22 +147,23 @@ class ReceiveClientFiles(threading.Thread):
 			else:
 				for client in file_clients_to_read:		# Check if it's the coding message to send file
 					data = client.recv(1024).decode()
-					if data and data =="file_to_be_sent":
-						new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-						with open(new_filename, 'wb') as f:  #create the file							
-							msg_send = "file_opened"
-							client.send(msg_send.encode())	# Tell client server is writing in file
-							file_reception_message = client.recv(1024).decode()
-							if file_reception_message == "file_is_sending": # Test if client is going to send file
-								receiving = True
-								while receiving == True:
-									file_data = client.recv(1024)
-									if not file_data:
-										break
-									f.write(file_data)		# Write in opnened file
-									receiving = False
-								f.close()
-								self.received_message_window.append("Fichier bien reçu")
+					if data:
+						if data =="file_to_be_sent":
+							new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+							with open(new_filename, 'wb') as f:  #create the file							
+								msg_send = "file_opened"
+								client.send(msg_send.encode())	# Tell client server is writing in file
+								file_reception_message = client.recv(1024).decode()
+								if file_reception_message == "file_is_sending": # Test if client is going to send file
+									receiving = True
+									while receiving == True:
+										file_data = client.recv(1024)
+										if not file_data:
+											break
+										f.write(file_data)		# Write in opnened file
+										receiving = False
+									f.close()
+									self.received_message_window.append("Fichier bien reçu")
 								self.broadcast.broadcast_file(new_filename, client)
 
 ''' ------- Send Message 
