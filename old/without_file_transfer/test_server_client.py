@@ -2,7 +2,7 @@ import unittest
 import socket
 
 from server import Server, ReceiveMessages, SendMessages, Broadcast, CloseMainConnection
-from client import Client, SendMessageToServer, ReceiveServerMessages
+from client import Client, ReceiveServerMessages
 class TestServerInstantiateClassMethods(unittest.TestCase):
 
     def create_server(self):
