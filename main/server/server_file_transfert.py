@@ -2,43 +2,56 @@ import socket
 import threading
 import select
 
+import re
+
 from datetime import datetime
 
 from PyQt4.QtCore import QThread
-''' Server Thread 
 
-Thread which is enabled when server is created. Listen to new client connection '''
+''' ------- Server thread
+		Input : pseudo / ip / port / windows where received messages are displayed
+		Function : This thread listens to client connecions. If there is a connection, new client is
+		added to a client_connected list ------- '''
 
 class Server(QThread):
 	def __init__(self, pseudo, host, port, received_message_window):
 		QThread.__init__(self)
 		self.pseudo = pseudo
+		# http://stackoverflow.com/questions/10086572/ip-address-validation-in-python-using-regex
+		regex_match_ip=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",host)
+		if not regex_match_ip:
+			print("L'adresse IP n'est pas valide")
+			exit()
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = int(port)
-		self.file_port = int(port) + 1
+		try:
+			self.port = int(port)
+			self.file_port = int(port)+1
+		except ValueError:
+			print("Le port n'est pas valide.")
+			exit()
 		self.running = True
 		self.main_connection = None
 		self.clients_connected = []
 		self.client_connected_for_file_sending = []
-		# Get thread to send and receiver messages
-		#self.receive_client_messages = receive_client_messages
-		#self.send_messages_to_clients = send_messages_to_clients
+
+		try:
+			# Create main connection
+			self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.main_connection.bind((self.host,self.port))
+			self.main_connection.listen(5)
+
+			# Create connection for file sending
+			self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.main_connection_file.bind((self.host,self.file_port))
+			self.main_connection_file.listen(5)
+		except OSError:
+			print("Le port chosi est déjà pris, veuillez en choisir un autre")
+			exit()
+
 
 	def run(self):
-		# Create main connection
-		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.main_connection.bind((self.host,self.port))
-		self.main_connection.listen(5)
-
-		# Create connection for file sending
-		self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.main_connection_file.bind((self.host,self.file_port))
-		self.main_connection_file.listen(5)
-
 		while self.running == True:
-			# Get all new connections asked by client
-			# TODO : add an exception for ValueError ! (when server is closing conneciton ; pb)
 			try:
 				ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
 				for connection in ask_connections:
@@ -58,19 +71,22 @@ class Server(QThread):
 					self.client_connected_for_file_sending.append(connection_with_client)
 			except OSError:
 				self.running = False
-				
-		
 
-''' Receive message Thread 
 
-Thread which is enabled server to receive client messages '''
+
+''' ------- Receive Message thread
+		Input : server / function to broadcast message to other clients / windows where received messages are displayed
+		Function :
+		- Listen if new messages are received by server
+		- Print received messages in the dedicated window in pyqt interface
+		- Call broadcast function to broadcast received messages to all clients ------- '''
 class ReceiveMessages(QThread):
 	def __init__(self, server, broadcast, received_message_window):
 		QThread.__init__(self)
 		self.server = server
 		self.running = True
 		self.broadcast = broadcast
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
@@ -93,24 +109,26 @@ class ReceiveMessages(QThread):
 					else:
 						self.broadcast.broadcast(msg_received, client)
 
-	
+
 	def kill(self, client):
 		self.server.clients_connected.remove(client)
 		client.close()
-		print("connection with client closed")
 
-''' Receive File thread 
-
-Thread which enabled server to receive files from client '''
+''' ------- Receive File thread
+		Input : server / function to broadcast message to other clients / windows where received messages are displayed
+		Function :
+		- Listen if new files are received by server
+		- Open a new file named by now's datetime
+		- Write received data in opened file
+		- Close file and send to client confirmation message ------- '''
 
 class ReceiveClientFiles(threading.Thread):
 	def __init__(self, server, broadcast, received_message_window):
 		threading.Thread.__init__(self)
 		self.server = server
-		#self.connection_with_server = self.client.connection_with_server
 		self.broadcast = broadcast
 		self.running = True
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
@@ -146,9 +164,11 @@ class ReceiveClientFiles(threading.Thread):
 									self.received_message_window.append("Fichier bien reçu")
 									self.broadcast.broadcast_file(new_filename, client)
 
-''' Send message Thread 
+''' ------- Send Message
+		Input : server
+		Function :
+		- Send text message to a client list ------- '''
 
-Thread which is enabled server to send messages to clients '''
 class SendMessages():
 	def __init__(self, server, close_main_connection):
 		self.server = server
@@ -160,33 +180,34 @@ class SendMessages():
 			client.send(message.encode())
 
 	def kill(self):
-		print("send message thread closed")
 		self.close_main_connection.kill()
 
-# TODO : Merge send_file with send_file_to_client_list
+''' ------- Send File
+		Input : server / windows where received messages are displayed
+		Function :
+		- Send file all clients
+		- Send file to client list ------- '''
 
 class SendFile():
 	def __init__(self, server, received_message_window):
 		self.server = server
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def send_file(self, filename):
-		# TODO : Be able to select a file in pyqt
-		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
 		warning_msg = "file_to_be_sent"
 		for client in self.server.client_connected_for_file_sending:
 			client.send(warning_msg.encode())
 			file_openend_message = client.recv(1024) #Wait for opened file on client file
 			file_openend_message = file_openend_message.decode()
 			if file_openend_message == "file_opened":
-				sending_file_message = "file_is_sending" #Send the file 
+				sending_file_message = "file_is_sending" #Send the file
 				client.send(sending_file_message.encode())
 				f = open(filename,'rb') #Open the file in reading mode
 				l = f.read(1024)
 				while (l):
 					client.send(l)
 					l = f.read(1024)
-				f.close() #close the file 
+				f.close() #close the file
 				False
 				self.received_message_window.append("Fichier envoyé")
 
@@ -197,16 +218,22 @@ class SendFile():
 			file_openend_message = client.recv(1024) #Wait for opened file on client file
 			file_openend_message = file_openend_message.decode()
 			if file_openend_message == "file_opened":
-				sending_file_message = "file_is_sending" #Send the file 
+				sending_file_message = "file_is_sending" #Send the file
 				client.send(sending_file_message.encode())
 				f = open(filename,'rb') #Open the file in reading mode
 				l = f.read(1024)
 				while (l):
 					client.send(l)
 					l = f.read(1024)
-				f.close() #close the file 
+				f.close() #close the file
 				False
 				self.received_message_window.append("Fichier envoyé")
+
+''' ------- Broadcast message to all clients
+		Input : send message function
+		Function :
+		- Function called when server receives a message from one client
+		- Brodacast this message to other clients  ------- '''
 
 class Broadcast():
 	def __init__(self, send_messages_to_clients):
@@ -216,7 +243,13 @@ class Broadcast():
 	def broadcast(self, message, client):
 		list_clients_who_send_message = list(self.send_messages_to_clients.server.clients_connected)
 		list_clients_who_send_message.remove(client)
-		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message) 		
+		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message)
+
+''' ------- Broadcast file to all clients
+		Input : send file fusction
+		Function :
+		- Function called when server receives a file from one client
+		- Brodacast this message to other clients  ------- '''
 
 class BroadcastFile():
 	def __init__(self, send_files_to_clients):
@@ -227,6 +260,12 @@ class BroadcastFile():
 		list_clients_to_send_file.remove(client)
 		self.send_files_to_clients.send_file_to_client_list(filename, list_clients_to_send_file)
 
+''' ------- Close connection and thread
+		Input : server
+		Function :
+		- Close all connection with all clients
+		- Close all threads  ------- '''
+
 class CloseMainConnection():
 	def __init__(self, server):
 		self.server = server
@@ -235,39 +274,12 @@ class CloseMainConnection():
 
 	def kill(self):
 		self.server.running = False
-		print("Server closed")
 		self.receive_client_messages.running = False
-		print("receive client message thread closed")
 		self.receive_client_files.running = False
-		print("receive client files thread closed")
 		for client in self.server.clients_connected:
 			client.close()
-		print("connection with all clients closed")
 		for client in self.server.client_connected_for_file_sending:
 			client.close()
-		print("connection with all clients closed file")
 		self.server.main_connection.close()
-		print("main connection closed")
 		self.server.main_connection_file.close()
-		print("main connection file closed")
-
-
-if __name__ == "__main__":
-	#my_ip = input("Quel est ton ip?")
-	#pseudo = input('Choisis un pseudo : ')
-	my_ip = "127.0.0.1"
-	pseudo = "ryan"
-	server = Server(pseudo, my_ip)
-	close_main_connection = CloseMainConnection(server)
-	send_messages_to_clients = SendMessages(server, close_main_connection)
-	broadcast = Broadcast(send_messages_to_clients)
-	receive_client_messages = ReceiveMessages()
-	
-	send_messages_to_clients.start()
-	receive_client_messages.start()
-	server = Server(pseudo, my_ip, receive_client_messages, send_messages_to_clients)
-	server.start()
-	receive_client_messages.server = server
-	send_messages_to_clients.server = server
-
-
+		print("Connexion fermée")

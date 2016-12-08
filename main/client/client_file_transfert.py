@@ -2,71 +2,78 @@ import socket
 import threading
 import select
 
+import re
+
 from PyQt4.QtCore import QThread
 
 from datetime import datetime
-# TODO : Send files
-# TODO Qt for graphic interface
-# TODO : login password to access chat
-# TODO : login before message
 
-# TODO : Pass send message to a class in client_file_transfert.py
-
-''' Client Class 
-
-Create the object client and connect to server '''
+''' ------- Client
+		Input : pseudo / ip / port / windows where received messages are displayed
+		Function : Connect to server ------- '''
 class Client():
 	def __init__(self, pseudo, host, port, received_message_window):
 		self.pseudo = pseudo
+		# http://stackoverflow.com/questions/10086572/ip-address-validation-in-python-using-regex
+		regex_match_ip=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",host)
+		if not regex_match_ip:
+			print("L'adresse IP n'est pas valide")
+			exit()
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = int(port)
-		self.file_port = int(port)+1
+		try:
+			self.port = int(port)
+			self.file_port = int(port)+1
+		except ValueError:
+			print("Le port n'est pas valide.")
+			exit()
 		try:
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
-			print("connetion with server done")
 
 			self.file_connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.file_connection_with_server.connect((self.host, self.file_port))
-			print("connetion with server file done")
 
 			self.received_message_window.append("Vous avez rejoint la discussion")
-		except:
-			self.received_message_window.append("Le serveur '" + self.host+ "' est introuvable.")
+
+		except ConnectionRefusedError:
+			print("Le serveur '" + self.host+ "' est introuvable")
+			exit()
+
+		except OSError:
+			print("L'adresse IP '" + self.host+ "' est introuvable")
 			exit()
 		self.receive_server_messages = None
 		self.receive_server_files = None
 
 	def kill(self):
 		self.receive_server_messages.running = False
-		print("receive server message thread closed")
+
 		self.receive_server_files.running = False
-		print("receive server file thread closed")
 		self.connection_with_server.close()
-		print("Connection closed")
 		self.file_connection_with_server.close()
-		print("File Connection closed")
-		
+		print("Connexion fermée")
 
-''' Receive message thread 
 
-Thread which is enabled client to receive messages from server '''
+''' ------- Receive Message thread
+		Input : client / windows where received messages are displayed
+		Function :
+		- Listen if new messages are received from server
+		- Print received messages in the dedicated window in pyqt interface
+		- If it's an ended message : close connection ------- '''
 
 class ReceiveServerMessages(QThread):
 	def __init__(self, client, received_message_window):
 		QThread.__init__(self)
 		self.client = client
-		#self.connection_with_server = self.client.connection_with_server
 		self.running = True
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
 			try:
 				inputready,outputready,exceptready \
 				= select.select ([self.client.connection_with_server],[],[])
-				#print(inputready)
 				for input_item in inputready:
 					# Handle sockets
 					data = self.client.connection_with_server.recv(1024).decode()
@@ -83,17 +90,20 @@ class ReceiveServerMessages(QThread):
 				self.running = False
 				self.client.kill()
 
-''' Receive File thread 
-
-Thread which enabled client to receive files from server '''
+''' ------- Receive File thread
+		Input : client / windows where received messages are displayed
+		Function :
+		- Listen if new files are received from server
+		- Open a new file named by now's datetime
+		- Write received data in opened file
+		- Close file and send to server confirmation message ------- '''
 
 class ReceiveServerFiles(QThread):
 	def __init__(self, client, received_message_window):
 		QThread.__init__(self)
 		self.client = client
-		#self.connection_with_server = self.client.connection_with_server
 		self.running = True
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
@@ -126,41 +136,30 @@ class ReceiveServerFiles(QThread):
 			except OSError:
 				self.running = False
 				self.client.kill()
-''' Send File to Server
 
-Thread which enabled client to send files to server '''
+''' ------- Send File
+		Input : client / windows where received messages are displayed
+		Function :
+		- Send file server ------- '''
 
 class SendServerFiles():
 	def __init__(self, client, received_message_window):
 		self.client = client
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def send_file(self, filename):
-		# TODO : Be able to select a file in pyqt
-		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
 		warning_msg = "file_to_be_sent"
 		self.client.file_connection_with_server.send(warning_msg.encode())
 		file_openend_message = self.client.file_connection_with_server.recv(1024) #Wait for opened file on client file
 		file_openend_message = file_openend_message.decode()
 		if file_openend_message == "file_opened":
-			sending_file_message = "file_is_sending" #Send the file 
+			sending_file_message = "file_is_sending" #Send the file
 			self.client.file_connection_with_server.send(sending_file_message.encode())
 			f = open(filename,'rb') #Open the file in reading mode
 			l = f.read(1024)
 			while (l):
 				self.client.file_connection_with_server.send(l)
 				l = f.read(1024)
-			f.close() #close the file 
+			f.close() #close the file
 			False
 			self.received_message_window.append("Fichier envoyé")
-
-
-if __name__ == "__main__":
-	#host = input('Quelle IP voulez-vous contacter ? ')
-	#pseudo = input ('Choisis un pseudo : ')
-	host = '127.0.0.1'
-	pseudo = "test"
-	client = Client(pseudo, host)
-	receive_server_messages = ReceiveServerMessages(client)
-	receive_server_messages.start()
-	client.receive_server_messages = receive_server_messages
