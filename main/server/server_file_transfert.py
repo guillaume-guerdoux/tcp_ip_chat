@@ -58,7 +58,6 @@ class Server(QThread):
 				for connection in ask_connections:
 					# Accept client connection
 					connection_with_client, connection_infos = self.main_connection.accept()
-					print("accepté")
 					self.received_message_window.append("Une nouvelle personne a rejoint la conversation")
 					# Add client connection to list and to threads list of client connected
 					self.clients_connected.append(connection_with_client)
@@ -67,7 +66,6 @@ class Server(QThread):
 				for connection in ask_connections_file:
 					# Accept client connection for file
 					connection_with_client, connection_infos = self.main_connection_file.accept()
-					print("accepté for file")
 					# Add client connection to list and to threads list of client connected for file
 					self.client_connected_for_file_sending.append(connection_with_client)
 			except OSError:
@@ -101,7 +99,6 @@ class ReceiveMessages(QThread):
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
 					self.received_message_window.append(msg_received)
-					print(msg_received)
 					if msg_received == "ENDED_SIGNAL_MESSAGE":
 						self.kill(client)
 					else:
@@ -112,7 +109,6 @@ class ReceiveMessages(QThread):
 		#Close the the connection when a client leaves.
 		self.server.clients_connected.remove(client)
 		client.close()
-		print("connection with client closed")
 
 
 
@@ -145,8 +141,7 @@ class ReceiveClientFiles(threading.Thread):
 					if data:
 						if data =="file_to_be_sent":
 							new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-							with open(new_filename, 'wb') as f:  #create the file
-								print("we write")
+							with open(new_filename, 'wb') as f:  #create the file							
 								msg_send = "file_opened"
 								client.send(msg_send.encode())
 								file_reception_message = client.recv(1024).decode()
@@ -179,7 +174,6 @@ class SendMessages():
 			client.send(message.encode())
 
 	def kill(self):
-		print("send message thread closed")
 		self.close_main_connection.kill()
 
 # TODO : Merge send_file with send_file_to_client_list
@@ -262,21 +256,15 @@ class CloseMainConnection():
 
 	def kill(self):
 		self.server.running = False
-		print("Server closed")
 		self.receive_client_messages.running = False
-		print("receive client message thread closed")
 		self.receive_client_files.running = False
-		print("receive client files thread closed")
 		for client in self.server.clients_connected:
 			client.close()
-		print("connection with all clients closed")
 		for client in self.server.client_connected_for_file_sending:
 			client.close()
-		print("connection with all clients closed file")
 		self.server.main_connection.close()
-		print("main connection closed")
 		self.server.main_connection_file.close()
-		print("main connection file closed")
+		print("Connexion fermée")
 
 
 if __name__ == "__main__":

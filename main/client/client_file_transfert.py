@@ -33,11 +33,9 @@ class Client():
 			#Create main connection
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
-			print("connetion with server done")
 
 			self.file_connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.file_connection_with_server.connect((self.host, self.file_port))
-			print("connetion with server file done")
 
 			self.received_message_window.append("Vous avez rejoint la discussion")
 		except ConnectionRefusedError:
@@ -53,13 +51,11 @@ class Client():
 	def kill(self):
 		#Close the connection
 		self.receive_server_messages.running = False
-		print("receive server message thread closed")
 		self.receive_server_files.running = False
-		print("receive server file thread closed")
 		self.connection_with_server.close()
-		print("Connection closed")
 		self.file_connection_with_server.close()
-		print("File Connection closed")
+		print("Connexion fermée")
+
 
 
 ''' Receive message thread
