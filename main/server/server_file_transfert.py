@@ -175,7 +175,7 @@ class SendFile():
 	def send_file(self, filename):
 		# TODO : Be able to select a file in pyqt
 		#filename='/media/guillaume/DATA/Cours/Third_year/ptit_chat_project/ptit_chat_POO/with_file_transfer/server/File'
-		warning_msg = "file_to_be_sent"
+		warning_msg = "file_to_send"
 		for client in self.server.client_connected_for_file_sending:
 			client.send(warning_msg.encode())
 			file_openend_message = client.recv(1024) #Wait for opened file on client file

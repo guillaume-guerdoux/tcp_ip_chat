@@ -2,6 +2,8 @@ import socket
 import threading
 import select
 
+import re
+
 from PyQt4.QtCore import QThread
 
 from datetime import datetime
@@ -14,10 +16,18 @@ Create the object client and connect to server '''
 class Client():
 	def __init__(self, pseudo, host, port, received_message_window):
 		self.pseudo = pseudo
+		regex_match_ip=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",host)
+		if not regex_match_ip:
+			print("L'adresse IP n'est pas valide")
+			exit()
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = int(port)
-		self.file_port = int(port)+1
+		try:
+			self.port = int(port)
+			self.file_port = int(port)+1
+		except ValueError:
+			print("Le port n'est pas valide.")
+			exit()
 		try:
 			#Create main connection
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,8 +39,12 @@ class Client():
 			print("connetion with server file done")
 
 			self.received_message_window.append("Vous avez rejoint la discussion")
-		except:
-			self.received_message_window.append("Le serveur '" + self.host+ "' est introuvable.")
+		except ConnectionRefusedError:
+			print("Le serveur '" + self.host+ "' est introuvable")
+			exit()
+
+		except OSError:
+			print("L'adresse IP '" + self.host+ "' n'est pas valide")
 			exit()
 		self.receive_server_messages = None
 		self.receive_server_files = None
@@ -98,23 +112,21 @@ class ReceiveServerFiles(QThread):
 				for input_item in inputready:
 					# Handle sockets
 					data = self.client.file_connection_with_server.recv(1024).decode()
-					if data:
-						if data =="file_to_be_sent":
-							with open("new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S"), 'wb') as f:  #create the file
-								print("we write")
-								msg_send = "file_opened"
-								self.client.file_connection_with_server.send(msg_send.encode())
-								file_reception_message = self.client.file_connection_with_server.recv(1024).decode()
-								if file_reception_message == "file_is_sending": #file reception started
-									receiving = True
-									while receiving == True:
-										file_data = self.client.file_connection_with_server.recv(1024)
-										if not file_data:
-											break
-										f.write(file_data)
-										receiving = False
-									f.close() #close the file
-									self.received_message_window.append("Fichier bien reçu")
+					if data and data =="file_to_send":
+						with open("received_file" + datetime.now().strftime("%d-%m-%Y-%H-%M-%S"), 'wb') as f:  #create the file
+							msg_send = "file_opened"
+							self.client.file_connection_with_server.send(msg_send.encode())
+							file_reception_message = self.client.file_connection_with_server.recv(1024).decode()
+							if file_reception_message == "file_is_sending": #file reception started
+								receiving = True
+								while receiving == True:
+									file_data = self.client.file_connection_with_server.recv(1024)
+									if not file_data:
+										break
+									f.write(file_data)
+									receiving = False
+								f.close()
+								self.received_message_window.append("Fichier bien reçu")
 					else:
 						break
 			except OSError:
