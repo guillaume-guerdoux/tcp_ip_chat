@@ -2,68 +2,46 @@ import socket
 import threading
 import select
 
-import re
-
 from datetime import datetime
 
 from PyQt4.QtCore import QThread
+''' Server Thread
 
-''' ------- Server thread
-		Input : pseudo / ip / port / windows where received messages are displayed
-		Function : This thread listens to client connecions. If there is a connection, new client is
-		added to a client_connected list ------- '''
-
+Thread which is enabled when server is created. Listen to new client connection '''
 class Server(QThread):
 	def __init__(self, pseudo, host, port, received_message_window):
 		QThread.__init__(self)
 		self.pseudo = pseudo
-
-		# http://stackoverflow.com/questions/10086572/ip-address-validation-in-python-using-regex
-		regex_match_ip=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",host)
-		if not regex_match_ip:
-			print("L'adresse IP n'est pas valide")
-			exit()
-
 		self.host = host
 		self.received_message_window = received_message_window
-		try:
-			self.port = int(port)
-			self.file_port = int(port)+1
-		except ValueError:
-			print("Le port n'est pas valide.")
-			exit()
-		
+		self.port = int(port)
+		self.file_port = int(port) + 1
 		self.running = True
+		self.main_connection = None
 		self.clients_connected = []
 		self.client_connected_for_file_sending = []
 
-		# Get thread to send and receiver messages
-		#self.receive_client_messages = receive_client_messages
-		#self.send_messages_to_clients = send_messages_to_clients
-
-		try:
-			# Create main connection
-			self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.main_connection.bind((self.host,self.port))
-			self.main_connection.listen(5)
-
-			# Create connection for file sending
-			self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.main_connection_file.bind((self.host,self.file_port))
-			self.main_connection_file.listen(5)
-		except OSError:
-			print("Le port chosi est déjà pris, veuillez en choisir un autre")
-			exit()
 
 	def run(self):
+		# Create main connection
+		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.main_connection.bind((self.host,self.port))
+		self.main_connection.listen(5)
+
+		# Create connection for file sending
+		self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.main_connection_file.bind((self.host,self.file_port))
+		self.main_connection_file.listen(5)
 
 		while self.running == True:
 			# Get all new connections asked by client
+			# TODO : add an exception for ValueError ! (when server is closing conneciton ; pb)
 			try:
 				ask_connections, wlist, xlist = select.select([self.main_connection], [], [], 0.05)
 				for connection in ask_connections:
 					# Accept client connection
 					connection_with_client, connection_infos = self.main_connection.accept()
+					print("accepté")
 					self.received_message_window.append("Une nouvelle personne a rejoint la conversation")
 					# Add client connection to list and to threads list of client connected
 					self.clients_connected.append(connection_with_client)
@@ -72,17 +50,17 @@ class Server(QThread):
 				for connection in ask_connections_file:
 					# Accept client connection for file
 					connection_with_client, connection_infos = self.main_connection_file.accept()
+					print("accepté for file")
 					# Add client connection to list and to threads list of client connected for file
 					self.client_connected_for_file_sending.append(connection_with_client)
 			except OSError:
 				self.running = False
 
-''' ------- Receive Message thread
-		Input : server / function to broadcast message to other clients / windows where received messages are displayed
-		Function : 
-		- Listen if new messages are received by server
-		- Print received messages in the dedicated window in pyqt interface
-		- Call broadcast function to broadcast received messages to all clients ------- '''
+
+
+''' Receive message Thread
+
+Thread which is enabled server to receive client messages '''
 class ReceiveMessages(QThread):
 	def __init__(self, server, broadcast, received_message_window):
 		QThread.__init__(self)
@@ -106,6 +84,7 @@ class ReceiveMessages(QThread):
 					msg_received = client.recv(1024)
 					msg_received = msg_received.decode()
 					self.received_message_window.append(msg_received)
+					print(msg_received)
 					if msg_received == "ENDED_SIGNAL_MESSAGE":
 						self.kill(client)
 					else:
@@ -116,6 +95,7 @@ class ReceiveMessages(QThread):
 		#Close the the connection when a client leaves.
 		self.server.clients_connected.remove(client)
 		client.close()
+		print("connection with client closed")
 
 
 
@@ -148,7 +128,8 @@ class ReceiveClientFiles(threading.Thread):
 					if data:
 						if data =="file_to_be_sent":
 							new_filename = "new_file-"+datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-							with open(new_filename, 'wb') as f:  #create the file							
+							with open(new_filename, 'wb') as f:  #create the file
+								print("we write")
 								msg_send = "file_opened"
 								client.send(msg_send.encode())
 								file_reception_message = client.recv(1024).decode()
@@ -181,6 +162,7 @@ class SendMessages():
 			client.send(message.encode())
 
 	def kill(self):
+		print("send message thread closed")
 		self.close_main_connection.kill()
 
 # TODO : Merge send_file with send_file_to_client_list
@@ -263,15 +245,21 @@ class CloseMainConnection():
 
 	def kill(self):
 		self.server.running = False
+		print("Server closed")
 		self.receive_client_messages.running = False
+		print("receive client message thread closed")
 		self.receive_client_files.running = False
+		print("receive client files thread closed")
 		for client in self.server.clients_connected:
 			client.close()
+		print("connection with all clients closed")
 		for client in self.server.client_connected_for_file_sending:
 			client.close()
+		print("connection with all clients closed file")
 		self.server.main_connection.close()
+		print("main connection closed")
 		self.server.main_connection_file.close()
-		print("Connexion fermée")
+		print("main connection file closed")
 
 
 if __name__ == "__main__":
