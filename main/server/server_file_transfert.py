@@ -2,6 +2,8 @@ import socket
 import threading
 import select
 
+import re
+
 from datetime import datetime
 
 from PyQt4.QtCore import QThread
@@ -12,26 +14,41 @@ class Server(QThread):
 	def __init__(self, pseudo, host, port, received_message_window):
 		QThread.__init__(self)
 		self.pseudo = pseudo
+		regex_match_ip=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",host)
+		if not regex_match_ip:
+			print("L'adresse IP n'est pas valide")
+			exit()
 		self.host = host
 		self.received_message_window = received_message_window
-		self.port = int(port)
-		self.file_port = int(port) + 1
+		try:
+			self.port = int(port)
+			self.file_port = int(port)+1
+		except ValueError:
+			print("Le port n'est pas valide.")
+			exit()
+		
 		self.running = True
-		self.main_connection = None
 		self.clients_connected = []
 		self.client_connected_for_file_sending = []
 
+		# Get thread to send and receiver messages
+		#self.receive_client_messages = receive_client_messages
+		#self.send_messages_to_clients = send_messages_to_clients
+		try:
+			# Create main connection
+			self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.main_connection.bind((self.host,self.port))
+			self.main_connection.listen(5)
+
+			# Create connection for file sending
+			self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.main_connection_file.bind((self.host,self.file_port))
+			self.main_connection_file.listen(5)
+		except OSError:
+			print("Le port chosi est déjà pris, veuillez en choisir un autre")
+			exit()
 
 	def run(self):
-		# Create main connection
-		self.main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.main_connection.bind((self.host,self.port))
-		self.main_connection.listen(5)
-
-		# Create connection for file sending
-		self.main_connection_file = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.main_connection_file.bind((self.host,self.file_port))
-		self.main_connection_file.listen(5)
 
 		while self.running == True:
 			# Get all new connections asked by client

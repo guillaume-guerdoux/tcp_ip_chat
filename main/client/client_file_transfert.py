@@ -16,6 +16,7 @@ Create the object client and connect to server '''
 class Client():
 	def __init__(self, pseudo, host, port, received_message_window):
 		self.pseudo = pseudo
+		# http://stackoverflow.com/questions/10086572/ip-address-validation-in-python-using-regex
 		regex_match_ip=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",host)
 		if not regex_match_ip:
 			print("L'adresse IP n'est pas valide")
