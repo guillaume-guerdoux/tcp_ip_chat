@@ -166,10 +166,8 @@ class SendServerFiles():
 
 
 if __name__ == "__main__":
-	#host = input('Quelle IP voulez-vous contacter ? ')
-	#pseudo = input ('Choisis un pseudo : ')
-	host = '127.0.0.1'
-	pseudo = "test"
+	host = input('Quelle IP voulez-vous contacter ? ')
+	pseudo = input ('Choisis un pseudo : ')
 	client = Client(pseudo, host)
 	receive_server_messages = ReceiveServerMessages(client)
 	receive_server_messages.start()
