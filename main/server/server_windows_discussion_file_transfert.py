@@ -1,15 +1,15 @@
 import sys
-from server_file_transfert import (Server, ReceiveMessages,ReceiveClientFiles, 
+from server_file_transfert import (Server, ReceiveMessages,ReceiveClientFiles,
 SendMessages, SendFile, Broadcast, BroadcastFile, CloseMainConnection)
 #from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 class ServerWindow(QWidget):
+#Chat window creation
 
 	def __init__(self, my_ip, pseudo, port):
 		super(ServerWindow, self).__init__()
-		#self.title = QtGui.QLabel('Title')
 		self.received_message_window = QTextEdit()
 		self.send_message_windows = QLineEdit()
 		self.send_message_button = QPushButton("Envoyer")
@@ -34,6 +34,7 @@ class ServerWindow(QWidget):
 		self.initUI()
 
 	def initUI(self):
+	#Chat window layout and design
 
 		grid = QGridLayout()
 		grid.setSpacing(10)
@@ -56,11 +57,13 @@ class ServerWindow(QWidget):
 	def send_text_messages(self):
 		message_to_send = self.send_message_windows.text()
 		if message_to_send:
+			#Close all connections
 			if message_to_send=="ENDED_SIGNAL_MESSAGE":
 				self.send_messages_to_clients.send_message_to_list_of_client(message_to_send,
 					self.send_messages_to_clients.server.clients_connected)
 				self.send_messages_to_clients.kill()
 				self.received_message_window.append(message_to_send)
+			#Send messages with sender pseudo
 			else:
 				self.send_messages_to_clients.send_message_to_list_of_client((self.send_messages_to_clients.server.pseudo
 					+ ": "
@@ -69,6 +72,7 @@ class ServerWindow(QWidget):
 		self.send_message_windows.clear()
 
 	def choose_file_to_sent(self):
+	#Select the file to be sent.
 		dlg = QFileDialog()
 		if dlg.exec_():
 			filenames = dlg.selectedFiles()
@@ -76,6 +80,7 @@ class ServerWindow(QWidget):
 				self.handle_file_sending.send_file(file)
 
 	def closeEvent(self, event):
+	#Close connection when the server closes.
 		ended_message = "ENDED_SIGNAL_MESSAGE"
 		self.send_messages_to_clients.send_message_to_list_of_client(ended_message,
 			self.send_messages_to_clients.server.clients_connected)

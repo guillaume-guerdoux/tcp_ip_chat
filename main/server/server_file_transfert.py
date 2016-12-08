@@ -5,10 +5,9 @@ import select
 from datetime import datetime
 
 from PyQt4.QtCore import QThread
-''' Server Thread 
+''' Server Thread
 
 Thread which is enabled when server is created. Listen to new client connection '''
-
 class Server(QThread):
 	def __init__(self, pseudo, host, port, received_message_window):
 		QThread.__init__(self)
@@ -21,9 +20,7 @@ class Server(QThread):
 		self.main_connection = None
 		self.clients_connected = []
 		self.client_connected_for_file_sending = []
-		# Get thread to send and receiver messages
-		#self.receive_client_messages = receive_client_messages
-		#self.send_messages_to_clients = send_messages_to_clients
+
 
 	def run(self):
 		# Create main connection
@@ -58,10 +55,10 @@ class Server(QThread):
 					self.client_connected_for_file_sending.append(connection_with_client)
 			except OSError:
 				self.running = False
-				
-		
 
-''' Receive message Thread 
+
+
+''' Receive message Thread
 
 Thread which is enabled server to receive client messages '''
 class ReceiveMessages(QThread):
@@ -70,7 +67,7 @@ class ReceiveMessages(QThread):
 		self.server = server
 		self.running = True
 		self.broadcast = broadcast
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
@@ -93,24 +90,26 @@ class ReceiveMessages(QThread):
 					else:
 						self.broadcast.broadcast(msg_received, client)
 
-	
+
 	def kill(self, client):
+		#Close the the connection when a client leaves.
 		self.server.clients_connected.remove(client)
 		client.close()
 		print("connection with client closed")
 
-''' Receive File thread 
+
+
+''' Receive File thread
 
 Thread which enabled server to receive files from client '''
-
 class ReceiveClientFiles(threading.Thread):
+
 	def __init__(self, server, broadcast, received_message_window):
 		threading.Thread.__init__(self)
 		self.server = server
-		#self.connection_with_server = self.client.connection_with_server
 		self.broadcast = broadcast
 		self.running = True
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
@@ -146,10 +145,13 @@ class ReceiveClientFiles(threading.Thread):
 									self.received_message_window.append("Fichier bien reçu")
 									self.broadcast.broadcast_file(new_filename, client)
 
-''' Send message Thread 
+''' Send message Thread
 
 Thread which is enabled server to send messages to clients '''
+
 class SendMessages():
+
+
 	def __init__(self, server, close_main_connection):
 		self.server = server
 		self.close_main_connection = close_main_connection
@@ -168,7 +170,7 @@ class SendMessages():
 class SendFile():
 	def __init__(self, server, received_message_window):
 		self.server = server
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def send_file(self, filename):
 		# TODO : Be able to select a file in pyqt
@@ -179,14 +181,14 @@ class SendFile():
 			file_openend_message = client.recv(1024) #Wait for opened file on client file
 			file_openend_message = file_openend_message.decode()
 			if file_openend_message == "file_opened":
-				sending_file_message = "file_is_sending" #Send the file 
+				sending_file_message = "file_is_sending" #Send the file
 				client.send(sending_file_message.encode())
 				f = open(filename,'rb') #Open the file in reading mode
 				l = f.read(1024)
 				while (l):
 					client.send(l)
 					l = f.read(1024)
-				f.close() #close the file 
+				f.close() #close the file
 				False
 				self.received_message_window.append("Fichier envoyé")
 
@@ -197,37 +199,45 @@ class SendFile():
 			file_openend_message = client.recv(1024) #Wait for opened file on client file
 			file_openend_message = file_openend_message.decode()
 			if file_openend_message == "file_opened":
-				sending_file_message = "file_is_sending" #Send the file 
+				sending_file_message = "file_is_sending" #Send the file
 				client.send(sending_file_message.encode())
 				f = open(filename,'rb') #Open the file in reading mode
 				l = f.read(1024)
 				while (l):
 					client.send(l)
 					l = f.read(1024)
-				f.close() #close the file 
+				f.close() #close the file
 				False
 				self.received_message_window.append("Fichier envoyé")
 
 class Broadcast():
+#The server is responsible for broadcasting a message when several clients are in the discussion.
+#Receive the message from one client and broadcast it to the others.
+
 	def __init__(self, send_messages_to_clients):
 		self.send_messages_to_clients = send_messages_to_clients
 
 	# Send receive message from one client to all clients
 	def broadcast(self, message, client):
 		list_clients_who_send_message = list(self.send_messages_to_clients.server.clients_connected)
-		list_clients_who_send_message.remove(client)
-		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message) 		
+		list_clients_who_send_message.remove(client) #remove the sender
+		self.send_messages_to_clients.send_message_to_list_of_client(message, list_clients_who_send_message)
 
 class BroadcastFile():
+#The server is responsible for broadcasting a file when several clients are in the discussion.
+#Receive the file from one client and broadcast it to the others.
+
 	def __init__(self, send_files_to_clients):
 		self.send_files_to_clients = send_files_to_clients
 
 	def broadcast_file(self, filename, client):
 		list_clients_to_send_file = list(self.send_files_to_clients.server.client_connected_for_file_sending)
-		list_clients_to_send_file.remove(client)
+		list_clients_to_send_file.remove(client) #remove the sender
 		self.send_files_to_clients.send_file_to_client_list(filename, list_clients_to_send_file)
 
 class CloseMainConnection():
+#Close the connection when the server leaves.
+
 	def __init__(self, server):
 		self.server = server
 		self.receive_client_messages = None
@@ -262,12 +272,10 @@ if __name__ == "__main__":
 	send_messages_to_clients = SendMessages(server, close_main_connection)
 	broadcast = Broadcast(send_messages_to_clients)
 	receive_client_messages = ReceiveMessages()
-	
+
 	send_messages_to_clients.start()
 	receive_client_messages.start()
 	server = Server(pseudo, my_ip, receive_client_messages, send_messages_to_clients)
 	server.start()
 	receive_client_messages.server = server
 	send_messages_to_clients.server = server
-
-

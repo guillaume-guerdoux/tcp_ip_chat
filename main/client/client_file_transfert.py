@@ -5,14 +5,10 @@ import select
 from PyQt4.QtCore import QThread
 
 from datetime import datetime
-# TODO : Send files
-# TODO Qt for graphic interface
-# TODO : login password to access chat
-# TODO : login before message
 
 # TODO : Pass send message to a class in client_file_transfert.py
 
-''' Client Class 
+''' Client Class
 
 Create the object client and connect to server '''
 class Client():
@@ -23,6 +19,7 @@ class Client():
 		self.port = int(port)
 		self.file_port = int(port)+1
 		try:
+			#Create main connection
 			self.connection_with_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.connection_with_server.connect((self.host, self.port))
 			print("connetion with server done")
@@ -39,6 +36,7 @@ class Client():
 		self.receive_server_files = None
 
 	def kill(self):
+		#Close the connection
 		self.receive_server_messages.running = False
 		print("receive server message thread closed")
 		self.receive_server_files.running = False
@@ -47,9 +45,9 @@ class Client():
 		print("Connection closed")
 		self.file_connection_with_server.close()
 		print("File Connection closed")
-		
 
-''' Receive message thread 
+
+''' Receive message thread
 
 Thread which is enabled client to receive messages from server '''
 
@@ -57,16 +55,14 @@ class ReceiveServerMessages(QThread):
 	def __init__(self, client, received_message_window):
 		QThread.__init__(self)
 		self.client = client
-		#self.connection_with_server = self.client.connection_with_server
 		self.running = True
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
 			try:
 				inputready,outputready,exceptready \
 				= select.select ([self.client.connection_with_server],[],[])
-				#print(inputready)
 				for input_item in inputready:
 					# Handle sockets
 					data = self.client.connection_with_server.recv(1024).decode()
@@ -83,7 +79,7 @@ class ReceiveServerMessages(QThread):
 				self.running = False
 				self.client.kill()
 
-''' Receive File thread 
+''' Receive File thread
 
 Thread which enabled client to receive files from server '''
 
@@ -91,16 +87,14 @@ class ReceiveServerFiles(QThread):
 	def __init__(self, client, received_message_window):
 		QThread.__init__(self)
 		self.client = client
-		#self.connection_with_server = self.client.connection_with_server
 		self.running = True
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def run(self):
 		while self.running == True:
 			try:
 				inputready,outputready,exceptready \
 				= select.select([self.client.file_connection_with_server],[],[])
-				#print(inputready)
 				for input_item in inputready:
 					# Handle sockets
 					data = self.client.file_connection_with_server.recv(1024).decode()
@@ -119,7 +113,7 @@ class ReceiveServerFiles(QThread):
 											break
 										f.write(file_data)
 										receiving = False
-									f.close()
+									f.close() #close the file
 									self.received_message_window.append("Fichier bien reçu")
 					else:
 						break
@@ -133,7 +127,7 @@ Thread which enabled client to send files to server '''
 class SendServerFiles():
 	def __init__(self, client, received_message_window):
 		self.client = client
-		self.received_message_window = received_message_window 
+		self.received_message_window = received_message_window
 
 	def send_file(self, filename):
 		# TODO : Be able to select a file in pyqt
@@ -143,14 +137,14 @@ class SendServerFiles():
 		file_openend_message = self.client.file_connection_with_server.recv(1024) #Wait for opened file on client file
 		file_openend_message = file_openend_message.decode()
 		if file_openend_message == "file_opened":
-			sending_file_message = "file_is_sending" #Send the file 
+			sending_file_message = "file_is_sending" #Send the file
 			self.client.file_connection_with_server.send(sending_file_message.encode())
 			f = open(filename,'rb') #Open the file in reading mode
 			l = f.read(1024)
 			while (l):
 				self.client.file_connection_with_server.send(l)
 				l = f.read(1024)
-			f.close() #close the file 
+			f.close() #close the file
 			False
 			self.received_message_window.append("Fichier envoyé")
 

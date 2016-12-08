@@ -5,10 +5,10 @@ from PyQt4.QtGui import *
 
 
 class ClientWindow(QWidget):
+#Chat window creation
 
 	def __init__(self, my_ip, pseudo, port):
 		super(ClientWindow, self).__init__()
-		#self.title = QtGui.QLabel('Title')
 		self.received_message_window = QTextEdit()
 		self.send_message_windows = QLineEdit()
 		self.send_message_button = QPushButton("Envoyer")
@@ -29,6 +29,7 @@ class ClientWindow(QWidget):
 		self.initUI()
 
 	def initUI(self):
+		#Chat window layout and design
 
 		grid = QGridLayout()
 		grid.setSpacing(10)
@@ -52,15 +53,18 @@ class ClientWindow(QWidget):
 	def send_text_messages(self):
 		message_to_send = self.send_message_windows.text()
 		if message_to_send:
+			#Close client connection
 			if message_to_send=="ENDED_SIGNAL_MESSAGE":
 				self.client.connection_with_server.send(message_to_send.encode())
 				self.client.kill()
+			#Send the message with the client pseudo
 			else:
 				self.client.connection_with_server.send((self.client.pseudo + ': ' + message_to_send).encode())
 			self.received_message_window.append(message_to_send)
 			self.send_message_windows.clear()
 
 	def choose_file_to_sent(self):
+		#Select the file to be sent.
 		dlg = QFileDialog()
 		if dlg.exec_():
 			filenames = dlg.selectedFiles()
